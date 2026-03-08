@@ -4,8 +4,19 @@ window.addEventListener('load', function() {
 });
 
 document.getElementById('format-btn').addEventListener('click', function() {
+    this.classList.add('active');
+    document.getElementById('compress-btn').classList.remove('active');
     formatJSON();
 });
+
+document.getElementById('compress-btn').addEventListener('click', function() {
+    this.classList.add('active');
+    document.getElementById('format-btn').classList.remove('active');
+    compressJSON();
+});
+
+let currentView = 'formatted'; // 'formatted' or 'compressed'
+let currentJSON = null;
 
 function formatJSON() {
     const input = document.getElementById('json-input').value.trim();
@@ -16,11 +27,14 @@ function formatJSON() {
         output.innerHTML = '';
         copyBtn.disabled = true;
         clearURL();
+        currentJSON = null;
         return;
     }
     
     try {
         const parsed = JSON.parse(input);
+        currentJSON = parsed;
+        currentView = 'formatted';
         output.innerHTML = renderJSON(parsed, 0);
         output.classList.remove('error');
         copyBtn.disabled = false;
@@ -31,6 +45,38 @@ function formatJSON() {
         output.classList.add('error');
         copyBtn.disabled = true;
         clearURL();
+        currentJSON = null;
+    }
+}
+
+function compressJSON() {
+    const input = document.getElementById('json-input').value.trim();
+    const output = document.getElementById('json-output');
+    const copyBtn = document.getElementById('copy-btn');
+    
+    if (!input) {
+        output.innerHTML = '';
+        copyBtn.disabled = true;
+        clearURL();
+        currentJSON = null;
+        return;
+    }
+    
+    try {
+        const parsed = JSON.parse(input);
+        currentJSON = parsed;
+        currentView = 'compressed';
+        const compressed = JSON.stringify(parsed);
+        output.textContent = compressed;
+        output.classList.remove('error');
+        copyBtn.disabled = false;
+        updateURL(input);
+    } catch (e) {
+        output.textContent = 'JSON 格式错误';
+        output.classList.add('error');
+        copyBtn.disabled = true;
+        clearURL();
+        currentJSON = null;
     }
 }
 
@@ -53,6 +99,9 @@ function loadFromURL() {
         try {
             const json = decodeURIComponent(atob(encoded));
             document.getElementById('json-input').value = json;
+            // 默认使用格式化视图
+            document.getElementById('format-btn').classList.add('active');
+            document.getElementById('compress-btn').classList.remove('active');
             formatJSON();
         } catch (e) {
             console.error('Failed to decode URL parameter:', e);

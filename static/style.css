@@ -133,6 +133,49 @@ h2 {
     display: none;
 }
 
+/* Action buttons */
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.format-btn {
+    padding: 12px 30px;
+    font-size: 16px;
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    flex: 1;
+}
+
+.format-btn:hover {
+    background-color: #357abd;
+}
+
+.compress-btn {
+    padding: 12px 30px;
+    font-size: 16px;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    flex: 1;
+}
+
+.compress-btn:hover {
+    background-color: #5a6268;
+}
+
+.compress-btn.active {
+    background-color: #007bff;
+}
+
 /* Copy button styles */
 .output-header {
     display: flex;
