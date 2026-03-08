@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JSON Formatter Test</title>
+</head>
+<body>
+    <h1>JSON Formatter Core Test</h1>
+    <textarea id="json-input" style="width: 100%; height: 100px">{"name": "test", "value": 123}</textarea>
+    <button onclick="testFormat()">Format Test</button>
+    <pre id="output"></pre>
+    
+    <script>
+    function testFormat() {
+        try {
+            const input = document.getElementById('json-input').value;
+            const parsed = JSON.parse(input);
+            const formatted = JSON.stringify(parsed, null, 2);
+            document.getElementById('output').textContent = formatted;
+            console.log('✅ Core formatting works');
+        } catch (e) {
+            document.getElementById('output').textContent = 'Error: ' + e.message;
+            console.error('❌ Error:', e);
+        }
+    }
+    
+    // Test if basic JS works
+    console.log('✅ Basic JS loaded');
+    </script>
+</body>
+</html>

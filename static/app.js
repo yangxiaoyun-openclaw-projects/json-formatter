@@ -1385,7 +1385,7 @@ function getPythonType(value) {
     switch(typeof value) {
         case 'string': return 'str';
         case 'number': 
-            return 'int' if (Number.isInteger(value)) else 'float';
+            return Number.isInteger(value) ? 'int' : 'float';
         case 'boolean': return 'bool';
         default: return 'Any';
     }
