@@ -17,9 +17,9 @@ jobs:
       with:
         host: ${{ secrets.ALIYUN_HOST }}
         username: ${{ secrets.ALIYUN_USERNAME }}
-        key: ${{ secrets.ALIYUN_SSH_KEY }}
+        password: ${{ secrets.ALIYUN_PASSWORD }}
         script: |
-          cd /var/www/json-formatter
+          cd /home/yangxiaoyun/workspace/online/json-formatter
           git pull origin master
           pip3 install -r requirements.txt
-          sudo systemctl restart json-formatter
+          sudo systemctl restart json-formatter || echo "Service not set up yet"
