@@ -331,6 +331,76 @@ h2 {
     color: #d32f2f;
 }
 
+/* XML View */
+.output-view-switcher {
+    display: flex;
+    gap: 4px;
+    background-color: #f1f3f4;
+    border-radius: 4px;
+    padding: 2px;
+}
+
+.view-btn {
+    padding: 4px 12px;
+    font-size: 14px;
+    background-color: transparent;
+    color: #666;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.view-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.view-btn.active {
+    background-color: white;
+    color: #333;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.view-content {
+    flex: 1;
+}
+
+.view-content pre {
+    flex: 1;
+    padding: 15px;
+    font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+    font-size: 14px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin: 0;
+}
+
+/* XML syntax highlighting */
+.xml-tag {
+    color: #005a9c;
+}
+
+.xml-attr-name {
+    color: #8a2be2;
+}
+
+.xml-attr-value {
+    color: #008000;
+}
+
+.xml-text {
+    color: #333;
+}
+
+.xml-comment {
+    color: #888;
+    font-style: italic;
+}
+
 .format-btn {
     padding: 12px 30px;
     font-size: 16px;

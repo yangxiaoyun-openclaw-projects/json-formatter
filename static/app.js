@@ -66,6 +66,15 @@ document.getElementById('fix-btn').addEventListener('click', function() {
     provideFixSuggestion();
 });
 
+document.getElementById('json-view-btn').addEventListener('click', function() {
+    switchView('json');
+});
+
+document.getElementById('xml-view-btn').addEventListener('click', function() {
+    convertToXML();
+    switchView('xml');
+});
+
 document.getElementById('format-btn').addEventListener('click', function() {
     this.classList.add('active');
     document.getElementById('compress-btn').classList.remove('active');
@@ -420,6 +429,121 @@ function clearValidation() {
     document.getElementById('validation-result').innerHTML = '';
     document.getElementById('fix-btn').disabled = true;
     removeInputError();
+}
+
+function switchView(viewType) {
+    document.getElementById('json-view-btn').classList.remove('active');
+    document.getElementById('xml-view-btn').classList.remove('active');
+    document.getElementById('json-view').style.display = 'none';
+    document.getElementById('xml-view').style.display = 'none';
+    
+    if (viewType === 'json') {
+        document.getElementById('json-view-btn').classList.add('active');
+        document.getElementById('json-view').style.display = 'block';
+    } else if (viewType === 'xml') {
+        document.getElementById('xml-view-btn').classList.add('active');
+        document.getElementById('xml-view').style.display = 'block';
+    }
+}
+
+function convertToXML() {
+    const input = document.getElementById('json-input').value.trim();
+    if (!input) {
+        document.getElementById('xml-output').textContent = '';
+        return;
+    }
+    
+    try {
+        const parsed = JSON.parse(input);
+        const xml = jsonToXML(parsed);
+        document.getElementById('xml-output').innerHTML = highlightXML(xml);
+    } catch (e) {
+        document.getElementById('xml-output').textContent = '无法转换：JSON格式错误';
+    }
+}
+
+function jsonToXML(obj, indent = 0, rootName = 'root') {
+    const spaces = '  '.repeat(indent);
+    
+    if (obj === null || obj === undefined) {
+        return `${spaces}<${rootName} type="null"/>`;
+    }
+    
+    if (typeof obj === 'boolean') {
+        return `${spaces}<${rootName} type="boolean">${obj}</${rootName}>`;
+    }
+    
+    if (typeof obj === 'number') {
+        return `${spaces}<${rootName} type="number">${obj}</${rootName}>`;
+    }
+    
+    if (typeof obj === 'string') {
+        const escaped = escapeXML(obj);
+        return `${spaces}<${rootName} type="string">${escaped}</${rootName}>`;
+    }
+    
+    if (Array.isArray(obj)) {
+        if (obj.length === 0) {
+            return `${spaces}<${rootName} type="array" count="0"/>`;
+        }
+        
+        let result = `${spaces}<${rootName} type="array" count="${obj.length}">\n`;
+        obj.forEach((item, index) => {
+            const itemName = `item${index}`;
+            result += jsonToXML(item, indent + 1, itemName) + '\n';
+        });
+        result += `${spaces}</${rootName}>`;
+        return result;
+    }
+    
+    if (typeof obj === 'object') {
+        const keys = Object.keys(obj);
+        if (keys.length === 0) {
+            return `${spaces}<${rootName} type="object"/>`;
+        }
+        
+        let result = `${spaces}<${rootName} type="object">\n`;
+        keys.forEach(key => {
+            const validName = key.replace(/[^a-zA-Z0-9_-]/g, '_');
+            result += jsonToXML(obj[key], indent + 1, validName) + '\n';
+        });
+        result += `${spaces}</${rootName}>`;
+        return result;
+    }
+    
+    return `${spaces}<${rootName} type="unknown">${String(obj)}</${rootName}>`;
+}
+
+function escapeXML(text) {
+    return text.replace(/&/g, '&amp;')
+               .replace(/</g, '&lt;')
+               .replace(/>/g, '&gt;')
+               .replace(/"/g, '&quot;')
+               .replace(/'/g, '&apos;');
+}
+
+function highlightXML(xml) {
+    return xml
+        .replace(/&lt;([a-zA-Z0-9_-]+)(.*?)&gt;/g, (match, tagName, attrs) => {
+            let highlighted = `<span class="xml-tag">&lt;${tagName}</span>`;
+            if (attrs) {
+                highlighted += attrs.replace(/([a-zA-Z0-9_-]+)=&quot;([^&]*)&quot;/g, 
+                    '<span class="xml-attr-name"> $1</span>=<span class="xml-attr-value">&quot;$2&quot;</span>');
+            }
+            highlighted += '<span class="xml-tag">&gt;</span>';
+            return highlighted;
+        })
+        .replace(/&lt;\/([a-zA-Z0-9_-]+)&gt;/g, '<span class="xml-tag">&lt;/$1&gt;</span>')
+        .replace(/&lt;([a-zA-Z0-9_-]+)(.*?)\/&gt;/g, (match, tagName, attrs) => {
+            let highlighted = `<span class="xml-tag">&lt;${tagName}</span>`;
+            if (attrs) {
+                highlighted += attrs.replace(/([a-zA-Z0-9_-]+)=&quot;([^&]*)&quot;/g, 
+                    '<span class="xml-attr-name"> $1</span>=<span class="xml-attr-value">&quot;$2&quot;</span>');
+            }
+            highlighted += '<span class="xml-tag">/&gt;</span>';
+            return highlighted;
+        })
+        .replace(/([^<>&]+)(?=&lt;|$)/g, '<span class="xml-text">$1</span>');
 }
 
 function loadFromURLInput() {

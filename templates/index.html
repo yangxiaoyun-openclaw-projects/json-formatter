@@ -52,10 +52,18 @@
             </div>
             <div class="output-section">
                 <div class="output-header">
-                    <h2>格式化结果</h2>
+                    <div class="output-view-switcher">
+                        <button id="json-view-btn" class="view-btn active">JSON</button>
+                        <button id="xml-view-btn" class="view-btn">XML</button>
+                    </div>
                     <button id="copy-btn" class="copy-btn" disabled>复制</button>
                 </div>
-                <pre id="json-output"></pre>
+                <div id="json-view" class="view-content">
+                    <pre id="json-output"></pre>
+                </div>
+                <div id="xml-view" class="view-content" style="display: none;">
+                    <pre id="xml-output"></pre>
+                </div>
                 <div id="copy-toast" class="copy-toast">已复制到剪贴板</div>
             </div>
         </div>
