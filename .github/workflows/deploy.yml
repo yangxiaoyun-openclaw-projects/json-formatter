@@ -18,8 +18,10 @@ jobs:
         host: ${{ secrets.ALIYUN_HOST }}
         username: ${{ secrets.ALIYUN_USERNAME }}
         password: ${{ secrets.ALIYUN_PASSWORD }}
-        command_timeout: 5m
+        command_timeout: 10m
         script: |
+          set -e
+          
           # 创建目录并克隆（首次）
           mkdir -p /home/yangxiaoyun/workspace/online
           if [ ! -d "/home/yangxiaoyun/workspace/online/json-formatter" ]; then
@@ -28,7 +30,18 @@ jobs:
           fi
           
           cd /home/yangxiaoyun/workspace/online/json-formatter
-          git pull origin master
+          
+          # 重试 git pull（最多3次）
+          for i in 1 2 3; do
+            if git pull origin master; then
+              echo "✅ Git pull successful on attempt $i"
+              break
+            else
+              echo "⚠️ Git pull failed on attempt $i, retrying..."
+              sleep 5
+            fi
+          done
+          
           pip3 install -r requirements.txt
           
           # 停止旧进程
@@ -36,10 +49,9 @@ jobs:
           sleep 1
           
           # 使用 nohup 启动后台服务
-          cd /home/yangxiaoyun/workspace/online/json-formatter
           nohup python3 app.py > /tmp/json-formatter.log 2>&1 &
           echo $! > /tmp/json-formatter.pid
-          sleep 2
+          sleep 3
           
           # 检查服务
           if kill -0 $(cat /tmp/json-formatter.pid) 2>/dev/null; then
