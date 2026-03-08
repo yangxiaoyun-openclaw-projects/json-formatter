@@ -824,6 +824,18 @@ body.dark-theme .fix-btn:disabled {
     color: #888;
 }
 
+/* Dark theme for error messages and toasts */
+body.dark-theme .error,
+body.dark-theme .upload-error,
+body.dark-theme .validation-error,
+body.dark-theme .input-error {
+    color: #f44336;
+}
+
+body.dark-theme .copy-toast {
+    background-color: #2e7d32;
+}
+
 .copy-toast {
     position: fixed;
     top: 20px;
