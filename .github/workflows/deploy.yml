@@ -18,6 +18,7 @@ jobs:
         host: ${{ secrets.ALIYUN_HOST }}
         username: ${{ secrets.ALIYUN_USERNAME }}
         password: ${{ secrets.ALIYUN_PASSWORD }}
+        command_timeout: 30m
         script: |
           # 创建目录并克隆（首次）
           mkdir -p /home/yangxiaoyun/workspace/online
@@ -30,7 +31,20 @@ jobs:
           git pull origin master
           pip3 install -r requirements.txt
           
-          # 使用 nohup 后台运行
-          pkill -f "python.*app.py" || true
-          nohup python3 app.py > /tmp/json-formatter.log 2>&1 &
-          echo "Service started on port 5000"
+          # 停止旧进程
+          pkill -f "python.*app.py" 2>/dev/null || true
+          sleep 1
+          
+          # 使用 setsid 启动独立进程
+          setsid python3 app.py > /tmp/json-formatter.log 2>&1 &
+          sleep 2
+          
+          # 检查是否启动成功
+          if pgrep -f "python.*app.py" > /dev/null; then
+            echo "✅ Service started successfully on port 5000"
+            curl -s http://localhost:5000 > /dev/null && echo "✅ Health check passed"
+          else
+            echo "❌ Service failed to start"
+            cat /tmp/json-formatter.log
+            exit 1
+          fi
