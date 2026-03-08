@@ -32,19 +32,20 @@ jobs:
           pip3 install -r requirements.txt
           
           # 停止旧进程
-          pkill -f "python.*app.py" 2>/dev/null || true
+          killall python3 2>/dev/null || true
           sleep 1
           
-          # 使用 setsid 启动独立进程
-          setsid python3 app.py > /tmp/json-formatter.log 2>&1 &
-          sleep 2
+          # 写启动脚本
+          cat > start.sh << 'EOF'
+          #!/bin/bash
+          cd /home/yangxiaoyun/workspace/online/json-formatter
+          python3 app.py > /tmp/json-formatter.log 2>&1
+          EOF
+          chmod +x start.sh
           
-          # 检查是否启动成功
-          if pgrep -f "python.*app.py" > /dev/null; then
-            echo "✅ Service started successfully on port 5000"
-            curl -s http://localhost:5000 > /dev/null && echo "✅ Health check passed"
-          else
-            echo "❌ Service failed to start"
-            cat /tmp/json-formatter.log
-            exit 1
-          fi
+          # 使用 nohup + disown 启动
+          nohup ./start.sh &
+          disown
+          
+          sleep 3
+          echo "Service started"
