@@ -1861,29 +1861,25 @@ function applyDiffHighlighting(jsonString, diff, type) {
     if (type === 'removed') {
         diff.removed.forEach(item => {
             const path = item.path.replace(/\./g, '\\.');
-            const escapedPath = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const regex = new RegExp(`"${escapedPath}"\\s*:\\s*"?(.+?)"?[,}]`, 'g');
+            const regex = new RegExp(`"${path}"\\s*:\\s*"?(.+?)"?[,}]`, 'g');
             result = result.replace(regex, match => `<span class="diff-removed">${match}</span>`);
         });
         
         diff.changed.forEach(item => {
             const path = item.path.replace(/\./g, '\\.');
-            const escapedPath = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const regex = new RegExp(`"${escapedPath}"\\s*:\\s*"?(.+?)"?[,}]`, 'g');
+            const regex = new RegExp(`"${path}"\\s*:\\s*"?(.+?)"?[,}]`, 'g');
             result = result.replace(regex, match => `<span class="diff-changed">${match}</span>`);
         });
     } else if (type === 'added') {
         diff.added.forEach(item => {
             const path = item.path.replace(/\./g, '\\.');
-            const escapedPath = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const regex = new RegExp(`"${escapedPath}"\\s*:\\s*"?(.+?)"?[,}]`, 'g');
+            const regex = new RegExp(`"${path}"\\s*:\\s*"?(.+?)"?[,}]`, 'g');
             result = result.replace(regex, match => `<span class="diff-added">${match}</span>`);
         });
         
         diff.changed.forEach(item => {
             const path = item.path.replace(/\./g, '\\.');
-            const escapedPath = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const regex = new RegExp(`"${escapedPath}"\\s*:\\s*"?(.+?)"?[,}]`, 'g');
+            const regex = new RegExp(`"${path}"\\s*:\\s*"?(.+?)"?[,}]`, 'g');
             result = result.replace(regex, match => `<span class="diff-changed">${match}</span>`);
         });
     }

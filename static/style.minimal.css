@@ -1,0 +1,557 @@
+/* 极简风格优化 - 任务483 */
+
+/* 1. 整体极简化 */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #fafafa;
+    color: #222;
+    line-height: 1.6;
+    margin: 0;
+    padding: 24px;
+    min-height: 100vh;
+}
+
+body.dark-theme {
+    background: #111;
+    color: #eee;
+}
+
+/* 2. 容器极简化 */
+.container {
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+/* 3. 头部极简化 */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.dark-theme .header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.header h1 {
+    font-size: 24px;
+    font-weight: 500;
+    margin: 0;
+    color: #222;
+}
+
+body.dark-theme .header h1 {
+    color: #eee;
+}
+
+/* 4. 主布局极简化 */
+.main-layout {
+    display: flex;
+    gap: 24px;
+    height: calc(100vh - 140px);
+}
+
+/* 5. 历史面板极简化 */
+.history-panel {
+    width: 260px;
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+body.dark-theme .history-panel {
+    background: #1a1a1a;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.history-header {
+    padding: 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    background: rgba(0, 0, 0, 0.02);
+}
+
+body.dark-theme .history-header {
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+.history-header h3 {
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    margin: 0;
+}
+
+body.dark-theme .history-header h3 {
+    color: #aaa;
+}
+
+.history-list {
+    flex: 1;
+    padding: 12px;
+    overflow-y: auto;
+}
+
+.history-item {
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.history-item:hover {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.dark-theme .history-item {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-theme .history-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.history-item.active {
+    background: rgba(74, 144, 226, 0.1);
+    border-color: #4a90e2;
+}
+
+body.dark-theme .history-item.active {
+    background: rgba(130, 170, 255, 0.1);
+    border-color: #82aaff;
+}
+
+/* 6. 工作区极简化 */
+.work-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.input-section, .output-section {
+    flex: 1;
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+body.dark-theme .input-section,
+body.dark-theme .output-section {
+    background: #1a1a1a;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.input-section h2, .output-section h2 {
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    margin: 0 0 16px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+body.dark-theme .input-section h2,
+body.dark-theme .output-section h2 {
+    color: #aaa;
+}
+
+/* 7. 输入框极简化 */
+#json-input {
+    flex: 1;
+    padding: 16px;
+    font-family: "SF Mono", Monaco, Menlo, monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    background: #fafafa;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    color: #222;
+    resize: none;
+    outline: none;
+    transition: all 0.2s;
+}
+
+#json-input:focus {
+    border-color: #4a90e2;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+body.dark-theme #json-input {
+    background: #0a0a0a;
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #eee;
+}
+
+body.dark-theme #json-input:focus {
+    background: #111;
+    border-color: #82aaff;
+    box-shadow: 0 0 0 3px rgba(130, 170, 255, 0.1);
+}
+
+/* 8. 按钮极简化 */
+#format-btn {
+    margin-top: 16px;
+    padding: 12px 24px;
+    background: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#format-btn:hover {
+    background: #357abd;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
+}
+
+body.dark-theme #format-btn {
+    background: #82aaff;
+    color: #111;
+}
+
+body.dark-theme #format-btn:hover {
+    background: #6699ff;
+}
+
+/* 9. 操作栏极简化 */
+.operations {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.operation-btn {
+    padding: 8px 16px;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    color: #666;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.operation-btn:hover {
+    background: rgba(0, 0, 0, 0.06);
+    border-color: rgba(0, 0, 0, 0.15);
+}
+
+.operation-btn.active {
+    background: #4a90e2;
+    border-color: #4a90e2;
+    color: white;
+}
+
+body.dark-theme .operation-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #aaa;
+}
+
+body.dark-theme .operation-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+body.dark-theme .operation-btn.active {
+    background: #82aaff;
+    border-color: #82aaff;
+    color: #111;
+}
+
+/* 10. 输出区域极简化 */
+.output-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.output-view-switcher {
+    display: flex;
+    gap: 8px;
+}
+
+.view-btn {
+    padding: 6px 12px;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    color: #666;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.view-btn:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.view-btn.active {
+    background: #4a90e2;
+    border-color: #4a90e2;
+    color: white;
+}
+
+body.dark-theme .view-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #aaa;
+}
+
+body.dark-theme .view-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+body.dark-theme .view-btn.active {
+    background: #82aaff;
+    border-color: #82aaff;
+    color: #111;
+}
+
+/* 11. 下拉菜单极简化 */
+.converter-dropdown, .codegen-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.converter-menu, .codegen-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    min-width: 120px;
+    display: none;
+    z-index: 1000;
+}
+
+body.dark-theme .converter-menu,
+body.dark-theme .codegen-menu {
+    background: #222;
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.converter-dropdown:hover .converter-menu,
+.codegen-dropdown:hover .codegen-menu {
+    display: block;
+}
+
+.converter-option, .codegen-option {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    text-align: left;
+    color: #666;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.converter-option:hover, .codegen-option:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+body.dark-theme .converter-option,
+body.dark-theme .codegen-option {
+    color: #aaa;
+}
+
+body.dark-theme .converter-option:hover,
+body.dark-theme .codegen-option:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* 12. 输出内容极简化 */
+.view-content pre {
+    flex: 1;
+    padding: 16px;
+    margin: 0;
+    font-family: "SF Mono", Monaco, Menlo, monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    background: #fafafa;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: auto;
+    white-space: pre-wrap;
+}
+
+body.dark-theme .view-content pre {
+    background: #0a0a0a;
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #eee;
+}
+
+/* 13. JSON语法高亮极简化 */
+.json-key {
+    color: #4a90e2;
+}
+
+.json-string {
+    color: #2e7d32;
+}
+
+.json-number {
+    color: #f57c00;
+}
+
+.json-boolean {
+    color: #9c27b0;
+}
+
+.json-null {
+    color: #757575;
+}
+
+body.dark-theme .json-key {
+    color: #82aaff;
+}
+
+body.dark-theme .json-string {
+    color: #c3e88d;
+}
+
+body.dark-theme .json-number {
+    color: #f78c6c;
+}
+
+body.dark-theme .json-boolean {
+    color: #c792ea;
+}
+
+body.dark-theme .json-null {
+    color: #999;
+}
+
+/* 14. 复制按钮极简化 */
+.copy-btn {
+    padding: 6px 12px;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    color: #666;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.copy-btn:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.06);
+    border-color: rgba(0, 0, 0, 0.15);
+}
+
+.copy-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+body.dark-theme .copy-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #aaa;
+}
+
+body.dark-theme .copy-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* 15. 工具按钮极简化 */
+.header-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.theme-toggle, .api-docs-btn {
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    color: #666;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.theme-toggle:hover, .api-docs-btn:hover {
+    background: rgba(0, 0, 0, 0.06);
+    border-color: rgba(0, 0, 0, 0.15);
+}
+
+body.dark-theme .theme-toggle,
+body.dark-theme .api-docs-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #aaa;
+}
+
+body.dark-theme .theme-toggle:hover,
+body.dark-theme .api-docs-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* 16. 响应式优化 */
+@media (max-width: 1200px) {
+    .main-layout {
+        flex-direction: column;
+        height: auto;
+    }
+    
+    .history-panel {
+        width: 100%;
+        max-height: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 16px;
+    }
+    
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .header-buttons {
+        align-self: flex-end;
+    }
+}
