@@ -1,4 +1,13 @@
+// 页面加载时读取URL参数
+window.addEventListener('load', function() {
+    loadFromURL();
+});
+
 document.getElementById('format-btn').addEventListener('click', function() {
+    formatJSON();
+});
+
+function formatJSON() {
     const input = document.getElementById('json-input').value.trim();
     const output = document.getElementById('json-output');
     const copyBtn = document.getElementById('copy-btn');
@@ -6,6 +15,7 @@ document.getElementById('format-btn').addEventListener('click', function() {
     if (!input) {
         output.innerHTML = '';
         copyBtn.disabled = true;
+        clearURL();
         return;
     }
     
@@ -15,11 +25,44 @@ document.getElementById('format-btn').addEventListener('click', function() {
         output.classList.remove('error');
         copyBtn.disabled = false;
         bindToggleEvents();
+        updateURL(input);
     } catch (e) {
         output.textContent = 'JSON 格式错误';
         output.classList.add('error');
         copyBtn.disabled = true;
+        clearURL();
     }
+}
+
+function updateURL(json) {
+    const encoded = btoa(encodeURIComponent(json));
+    const newUrl = window.location.origin + window.location.pathname + '?json=' + encoded;
+    window.history.pushState({json: json}, '', newUrl);
+}
+
+function clearURL() {
+    const newUrl = window.location.origin + window.location.pathname;
+    window.history.pushState({}, '', newUrl);
+}
+
+function loadFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get('json');
+    
+    if (encoded) {
+        try {
+            const json = decodeURIComponent(atob(encoded));
+            document.getElementById('json-input').value = json;
+            formatJSON();
+        } catch (e) {
+            console.error('Failed to decode URL parameter:', e);
+        }
+    }
+}
+
+// 支持浏览器后退/前进保持状态
+window.addEventListener('popstate', function(event) {
+    loadFromURL();
 });
 
 // Copy functionality
