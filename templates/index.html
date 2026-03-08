@@ -27,6 +27,18 @@
                         </select>
                     </div>
                 </div>
+                <div class="upload-section">
+                    <div class="upload-options">
+                        <button id="url-upload-btn" class="upload-btn">从URL加载</button>
+                        <button id="file-upload-btn" class="upload-btn">上传文件</button>
+                        <input type="file" id="file-input" accept=".json,application/json" style="display: none;">
+                    </div>
+                    <div id="url-input-container" class="url-input-container" style="display: none;">
+                        <input type="text" id="url-input" placeholder="请输入JSON文件的URL..." class="url-input">
+                        <button id="url-load-btn" class="url-load-btn">加载</button>
+                    </div>
+                    <div id="upload-error" class="upload-error"></div>
+                </div>
             </div>
             <div class="output-section">
                 <div class="output-header">

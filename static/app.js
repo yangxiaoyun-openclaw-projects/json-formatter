@@ -4,6 +4,58 @@ window.addEventListener('load', function() {
     loadIndentFromURL();
 });
 
+// Upload functionality
+document.getElementById('url-upload-btn').addEventListener('click', function() {
+    const urlContainer = document.getElementById('url-input-container');
+    urlContainer.style.display = urlContainer.style.display === 'none' ? 'flex' : 'none';
+    document.getElementById('file-input').style.display = 'none';
+    clearUploadError();
+});
+
+document.getElementById('file-upload-btn').addEventListener('click', function() {
+    document.getElementById('file-input').click();
+    document.getElementById('url-input-container').style.display = 'none';
+    clearUploadError();
+});
+
+document.getElementById('file-input').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    if (!file.name.endsWith('.json') && file.type !== 'application/json') {
+        showUploadError('请选择JSON文件 (.json)');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const content = e.target.result;
+            // 验证是否为有效的JSON
+            JSON.parse(content);
+            document.getElementById('json-input').value = content;
+            document.getElementById('format-btn').classList.add('active');
+            document.getElementById('compress-btn').classList.remove('active');
+            formatJSON();
+            clearUploadError();
+        } catch (err) {
+            showUploadError('文件内容不是有效的JSON格式');
+        }
+    };
+    reader.onerror = function() {
+        showUploadError('读取文件失败');
+    };
+    reader.readAsText(file);
+});
+
+document.getElementById('url-load-btn').addEventListener('click', loadFromURLInput);
+
+document.getElementById('url-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        loadFromURLInput();
+    }
+});
+
 document.getElementById('format-btn').addEventListener('click', function() {
     this.classList.add('active');
     document.getElementById('compress-btn').classList.remove('active');
@@ -143,6 +195,64 @@ function loadIndentFromURL() {
         currentIndent = parseInt(indent);
         document.getElementById('indent-select').value = indent;
     }
+}
+
+function loadFromURLInput() {
+    const url = document.getElementById('url-input').value.trim();
+    if (!url) {
+        showUploadError('请输入URL');
+        return;
+    }
+    
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        showUploadError('请输入有效的URL（以 http:// 或 https:// 开头）');
+        return;
+    }
+    
+    clearUploadError();
+    fetchJSONFromURL(url);
+}
+
+function fetchJSONFromURL(url) {
+    document.getElementById('url-load-btn').disabled = true;
+    document.getElementById('url-load-btn').textContent = '加载中...';
+    
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            const jsonString = JSON.stringify(data);
+            document.getElementById('json-input').value = jsonString;
+            document.getElementById('format-btn').classList.add('active');
+            document.getElementById('compress-btn').classList.remove('active');
+            formatJSON();
+            document.getElementById('url-input-container').style.display = 'none';
+            document.getElementById('url-input').value = '';
+            clearUploadError();
+        })
+        .catch(error => {
+            showUploadError(`加载失败: ${error.message}`);
+        })
+        .finally(() => {
+            document.getElementById('url-load-btn').disabled = false;
+            document.getElementById('url-load-btn').textContent = '加载';
+        });
+}
+
+function showUploadError(message) {
+    const errorEl = document.getElementById('upload-error');
+    errorEl.textContent = message;
+    errorEl.classList.add('show');
+}
+
+function clearUploadError() {
+    const errorEl = document.getElementById('upload-error');
+    errorEl.textContent = '';
+    errorEl.classList.remove('show');
 }
 
 // 支持浏览器后退/前进保持状态
