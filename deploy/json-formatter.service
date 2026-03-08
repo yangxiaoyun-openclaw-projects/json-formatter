@@ -1,0 +1,13 @@
+[Unit]
+Description=JSON Formatter Web Service
+After=network.target
+
+[Service]
+User=www-data
+WorkingDirectory=/var/www/json-formatter
+ExecStart=/usr/bin/python3 /var/www/json-formatter/app.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

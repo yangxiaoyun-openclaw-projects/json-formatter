@@ -1,0 +1,25 @@
+name: Deploy to Aliyun
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy to Aliyun Server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.ALIYUN_HOST }}
+        username: ${{ secrets.ALIYUN_USERNAME }}
+        key: ${{ secrets.ALIYUN_SSH_KEY }}
+        script: |
+          cd /var/www/json-formatter
+          git pull origin master
+          pip3 install -r requirements.txt
+          sudo systemctl restart json-formatter
