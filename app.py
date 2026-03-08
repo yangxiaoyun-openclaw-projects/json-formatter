@@ -235,7 +235,9 @@ def json_to_csv(data):
                 value = item.get(header, '')
                 if isinstance(value, (dict, list)):
                     value = json.dumps(value)
-                row.append(f'"{str(value).replace(\"\"\", \"\"\"\")}"')
+                # Escape quotes for CSV
+                escaped_value = str(value).replace('"', '""')
+                row.append(f'"{escaped_value}"')
             csv_lines.append(','.join(row))
     
     return '\n'.join(csv_lines)
@@ -285,4 +287,4 @@ def json_to_xml(data, root_name='root'):
         return f'<{root_name}>{data}</{root_name}>'
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)

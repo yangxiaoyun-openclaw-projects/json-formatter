@@ -2,7 +2,28 @@
 window.addEventListener('load', function() {
     loadFromURL();
     loadIndentFromURL();
+    
+    // 初始化事件监听器（必须在DOM加载后）
+    initEventListeners();
 });
+
+function initEventListeners() {
+    // Add event listeners for converter options
+    document.querySelectorAll('.converter-option').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const format = this.getAttribute('data-format');
+            convertToFormat(format);
+        });
+    });
+    
+    // Add event listeners for code generation options
+    document.querySelectorAll('.codegen-option').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const lang = this.getAttribute('data-lang');
+            generateCode(lang);
+        });
+    });
+}
 
 // Upload functionality
 document.getElementById('url-upload-btn').addEventListener('click', function() {
@@ -73,22 +94,6 @@ document.getElementById('json-view-btn').addEventListener('click', function() {
 document.getElementById('xml-view-btn').addEventListener('click', function() {
     convertToXML();
     switchView('xml');
-});
-
-// Add event listeners for converter options
-document.querySelectorAll('.converter-option').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const format = this.getAttribute('data-format');
-        convertToFormat(format);
-    });
-});
-
-// Add event listeners for code generation options
-document.querySelectorAll('.codegen-option').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const lang = this.getAttribute('data-lang');
-        generateCode(lang);
-    });
 });
 
 // Theme toggle functionality
@@ -1682,24 +1687,7 @@ function bindToggleEvents() {
 
 // Theme toggle function
 function toggleTheme() {
-    const body = document.body;
-    const themeToggle = document.getElementById('theme-toggle');
-    
-    if (body.classList.contains('dark-theme')) {
-        // Switch to light theme
-        body.classList.remove('dark-theme');
-        themeToggle.textContent = '🌙';
-        localStorage.setItem('json-formatter-theme', 'light');
-    } else {
-        // Switch to dark theme
-        body.classList.add('dark-theme');
-        themeToggle.textContent = '☀️';
-        localStorage.setItem('json-formatter-theme', 'dark');
-    }
-}
-
-
-// Compare functionality
+    // Compare functionality
 document.getElementById('compare-mode-btn').addEventListener('click', function() {
     switchView('compare');
 });
