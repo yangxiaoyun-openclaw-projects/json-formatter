@@ -20,7 +20,6 @@ jobs:
         password: ${{ secrets.ALIYUN_PASSWORD }}
         timeout: 2m
         command_timeout: 10m
-        request_pty: true
         script: |
           echo "=== Starting deployment ==="
           
@@ -48,8 +47,15 @@ jobs:
           pip3 install -r requirements.txt
           
           echo "=== Stopping old process ==="
-          pkill -f "python3 app.py" 2>/dev/null || true
-          sleep 2
+          if [ -f /tmp/json-formatter.pid ]; then
+            OLD_PID=$(cat /tmp/json-formatter.pid 2>/dev/null)
+            if [ -n "$OLD_PID" ]; then
+              kill $OLD_PID 2>/dev/null || true
+              echo "Stopped old process with PID $OLD_PID"
+            fi
+            rm -f /tmp/json-formatter.pid
+          fi
+          sleep 1
           
           echo "=== Starting new process ==="
           cd /home/yangxiaoyun/workspace/online/json-formatter
