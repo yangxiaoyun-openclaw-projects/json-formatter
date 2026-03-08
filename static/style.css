@@ -8,11 +8,44 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     background-color: #f5f5f5;
     padding: 20px;
+    color: #333;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+body.dark-theme {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
 }
 
 .container {
     max-width: 1400px;
     margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.theme-toggle {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.theme-toggle:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    transform: scale(1.1);
+}
+
+body.dark-theme .theme-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 h1 {
@@ -48,10 +81,23 @@ h2 {
     border-radius: 4px;
     resize: none;
     outline: none;
+    background-color: white;
+    color: #333;
+    transition: background-color 0.3s, border-color 0.3s, color 0.3s;
 }
 
 #json-input:focus {
     border-color: #4a90e2;
+}
+
+body.dark-theme #json-input {
+    background-color: #2d2d2d;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+body.dark-theme #json-input:focus {
+    border-color: #1976d2;
 }
 
 #format-btn {
@@ -91,25 +137,46 @@ h2 {
     color: #d32f2f;
 }
 
-/* JSON syntax highlighting */
+/* JSON syntax highlighting - Light theme */
 .json-null {
-    color: #999;  /* 灰色 - 符合验收标准5 */
+    color: #999;
 }
 
 .json-boolean {
-    color: #9c27b0;  /* 紫色 - 符合验收标准4 */
+    color: #9c27b0;
 }
 
 .json-number {
-    color: #ff9800;  /* 橙色 - 符合验收标准3 */
+    color: #ff9800;
 }
 
 .json-string {
-    color: #4caf50;  /* 绿色 - 符合验收标准2 */
+    color: #4caf50;
 }
 
 .json-key {
-    color: #2196f3;  /* 蓝色 - 符合验收标准1 */
+    color: #2196f3;
+}
+
+/* Dark theme JSON syntax highlighting */
+body.dark-theme .json-null {
+    color: #999;
+}
+
+body.dark-theme .json-boolean {
+    color: #c792ea;
+}
+
+body.dark-theme .json-number {
+    color: #f78c6c;
+}
+
+body.dark-theme .json-string {
+    color: #c3e88d;
+}
+
+body.dark-theme .json-key {
+    color: #82aaff;
 }
 
 .json-bracket {
@@ -163,10 +230,21 @@ h2 {
     color: #333;
     outline: none;
     cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s, color 0.3s;
 }
 
 .indent-selector select:focus {
     border-color: #4a90e2;
+}
+
+body.dark-theme .indent-selector select {
+    background-color: #2d2d2d;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+body.dark-theme .indent-selector label {
+    color: #aaa;
 }
 
 /* Upload section */
@@ -197,6 +275,18 @@ h2 {
 
 .upload-btn.active {
     background-color: #007bff;
+}
+
+body.dark-theme .upload-btn {
+    background-color: #444;
+}
+
+body.dark-theme .upload-btn:hover {
+    background-color: #555;
+}
+
+body.dark-theme .upload-btn.active {
+    background-color: #1976d2;
 }
 
 .url-input-container {
@@ -377,6 +467,13 @@ h2 {
     white-space: pre-wrap;
     word-wrap: break-word;
     margin: 0;
+    transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+}
+
+body.dark-theme .view-content pre {
+    background-color: #2d2d2d;
+    border-color: #444;
+    color: #e0e0e0;
 }
 
 /* XML syntax highlighting */
@@ -390,6 +487,18 @@ h2 {
 
 .xml-attr-value {
     color: #008000;
+}
+
+body.dark-theme .xml-tag {
+    color: #6699cc;
+}
+
+body.dark-theme .xml-attr-name {
+    color: #c792ea;
+}
+
+body.dark-theme .xml-attr-value {
+    color: #c3e88d;
 }
 
 .xml-text {
@@ -500,6 +609,26 @@ h2 {
 
 .code-function {
     color: #6f42c1;
+}
+
+body.dark-theme .code-keyword {
+    color: #ff5370;
+}
+
+body.dark-theme .code-type {
+    color: #82aaff;
+}
+
+body.dark-theme .code-string {
+    color: #c3e88d;
+}
+
+body.dark-theme .code-comment {
+    color: #777;
+}
+
+body.dark-theme .code-function {
+    color: #c792ea;
 }
 
 /* Schema section */
@@ -646,6 +775,53 @@ h2 {
 .copy-btn:disabled {
     background-color: #6c757d;
     cursor: not-allowed;
+}
+
+body.dark-theme .copy-btn {
+    background-color: #2e7d32;
+}
+
+body.dark-theme .copy-btn:hover {
+    background-color: #1b5e20;
+}
+
+body.dark-theme .copy-btn:disabled {
+    background-color: #555;
+}
+
+/* Dark theme for main buttons */
+body.dark-theme #format-btn {
+    background-color: #1976d2;
+}
+
+body.dark-theme #format-btn:hover {
+    background-color: #1565c0;
+}
+
+body.dark-theme #format-btn:active {
+    background-color: #0d47a1;
+}
+
+body.dark-theme .url-load-btn {
+    background-color: #2e7d32;
+}
+
+body.dark-theme .url-load-btn:hover {
+    background-color: #1b5e20;
+}
+
+body.dark-theme .fix-btn {
+    background-color: #f57c00;
+    color: #fff;
+}
+
+body.dark-theme .fix-btn:hover:not(:disabled) {
+    background-color: #e65100;
+}
+
+body.dark-theme .fix-btn:disabled {
+    background-color: #555;
+    color: #888;
 }
 
 .copy-toast {
