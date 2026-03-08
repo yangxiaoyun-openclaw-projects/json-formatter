@@ -32,17 +32,20 @@ jobs:
           pip3 install -r requirements.txt
           
           # 停止旧进程
-          killall python3 2>/dev/null || true
+          pkill -f "python3 app.py" 2>/dev/null || true
           sleep 1
           
-          # 使用 screen 启动后台服务
-          screen -dmS json-formatter python3 app.py
+          # 使用 nohup 启动后台服务
+          cd /home/yangxiaoyun/workspace/online/json-formatter
+          nohup python3 app.py > /tmp/json-formatter.log 2>&1 &
+          echo $! > /tmp/json-formatter.pid
           sleep 2
           
           # 检查服务
-          if screen -list | grep -q "json-formatter"; then
-            echo "✅ Service started in screen session"
+          if kill -0 $(cat /tmp/json-formatter.pid) 2>/dev/null; then
+            echo "✅ Service started with PID $(cat /tmp/json-formatter.pid)"
           else
             echo "❌ Failed to start service"
+            cat /tmp/json-formatter.log
             exit 1
           fi
