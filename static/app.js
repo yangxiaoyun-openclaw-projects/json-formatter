@@ -1437,27 +1437,6 @@ function isRequired(value) {
     return value !== null && value !== undefined;
 }
 
-function getPythonType(value) {
-    if (Array.isArray(value)) {
-        if (value.length > 0) {
-            const itemType = getPythonType(value[0]);
-            return `List[${itemType}]`;
-        }
-        return 'List[Any]';
-    }
-    
-    if (value === null) return 'Any';
-    if (typeof value === 'object' && value !== null) return 'Dict[str, Any]';
-    
-    switch(typeof value) {
-        case 'string': return 'str';
-        case 'number': 
-            return Number.isInteger(value) ? 'int' : 'float';
-        case 'boolean': return 'bool';
-        default: return 'Any';
-    }
-}
-
 function toCamelCase(str) {
     return str.replace(/([-_][a-z])/g, group =>
         group.toUpperCase().replace('-', '').replace('_', '')
