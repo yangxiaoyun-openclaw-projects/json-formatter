@@ -18,7 +18,7 @@ jobs:
         host: ${{ secrets.ALIYUN_HOST }}
         username: ${{ secrets.ALIYUN_USERNAME }}
         password: ${{ secrets.ALIYUN_PASSWORD }}
-        command_timeout: 30m
+        command_timeout: 5m
         script: |
           # 创建目录并克隆（首次）
           mkdir -p /home/yangxiaoyun/workspace/online
@@ -35,17 +35,14 @@ jobs:
           killall python3 2>/dev/null || true
           sleep 1
           
-          # 写启动脚本
-          cat > start.sh << 'EOF'
-          #!/bin/bash
-          cd /home/yangxiaoyun/workspace/online/json-formatter
-          python3 app.py > /tmp/json-formatter.log 2>&1
-          EOF
-          chmod +x start.sh
+          # 使用 screen 启动后台服务
+          screen -dmS json-formatter python3 app.py
+          sleep 2
           
-          # 使用 nohup + disown 启动
-          nohup ./start.sh &
-          disown
-          
-          sleep 3
-          echo "Service started"
+          # 检查服务
+          if screen -list | grep -q "json-formatter"; then
+            echo "✅ Service started in screen session"
+          else
+            echo "❌ Failed to start service"
+            exit 1
+          fi
