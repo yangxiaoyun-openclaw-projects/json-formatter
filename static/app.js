@@ -75,6 +75,14 @@ document.getElementById('xml-view-btn').addEventListener('click', function() {
     switchView('xml');
 });
 
+// Add event listeners for converter options
+document.querySelectorAll('.converter-option').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const format = this.getAttribute('data-format');
+        convertToFormat(format);
+    });
+});
+
 document.getElementById('format-btn').addEventListener('click', function() {
     this.classList.add('active');
     document.getElementById('compress-btn').classList.remove('active');
@@ -432,10 +440,9 @@ function clearValidation() {
 }
 
 function switchView(viewType) {
-    document.getElementById('json-view-btn').classList.remove('active');
-    document.getElementById('xml-view-btn').classList.remove('active');
-    document.getElementById('json-view').style.display = 'none';
-    document.getElementById('xml-view').style.display = 'none';
+    // Hide all views and remove active classes
+    document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.view-content').forEach(view => view.style.display = 'none');
     
     if (viewType === 'json') {
         document.getElementById('json-view-btn').classList.add('active');
@@ -443,6 +450,8 @@ function switchView(viewType) {
     } else if (viewType === 'xml') {
         document.getElementById('xml-view-btn').classList.add('active');
         document.getElementById('xml-view').style.display = 'block';
+    } else if (['csv', 'yaml', 'tsv'].includes(viewType)) {
+        document.getElementById(`${viewType}-view`).style.display = 'block';
     }
 }
 
@@ -544,6 +553,207 @@ function highlightXML(xml) {
             return highlighted;
         })
         .replace(/([^<>&]+)(?=&lt;|$)/g, '<span class="xml-text">$1</span>');
+}
+
+function convertToFormat(format) {
+    const input = document.getElementById('json-input').value.trim();
+    if (!input) {
+        document.getElementById(`${format}-output`).textContent = '';
+        return;
+    }
+    
+    try {
+        const parsed = JSON.parse(input);
+        let result;
+        
+        switch(format) {
+            case 'csv':
+                result = jsonToCSV(parsed);
+                break;
+            case 'yaml':
+                result = jsonToYAML(parsed);
+                break;
+            case 'tsv':
+                result = jsonToTSV(parsed);
+                break;
+            default:
+                result = `不支持格式：${format}`;
+        }
+        
+        document.getElementById(`${format}-output`).textContent = result;
+        switchView(format);
+    } catch (e) {
+        document.getElementById(`${format}-output`).textContent = `转换失败：${e.message}`;
+        switchView(format);
+    }
+}
+
+function jsonToCSV(obj) {
+    if (!Array.isArray(obj)) {
+        return "CSV转换需要数组格式的JSON";
+    }
+    
+    if (obj.length === 0) {
+        return "";
+    }
+    
+    // 获取所有键（表头）
+    const headers = [];
+    obj.forEach(item => {
+        if (typeof item === 'object' && item !== null) {
+            Object.keys(item).forEach(key => {
+                if (!headers.includes(key)) {
+                    headers.push(key);
+                }
+            });
+        }
+    });
+    
+    // CSV头部
+    let csv = headers.map(h => escapeCSVField(h)).join(',') + '\n';
+    
+    // 数据行
+    obj.forEach(item => {
+        if (typeof item === 'object' && item !== null) {
+            const row = headers.map(header => {
+                const value = item[header];
+                if (value === null || value === undefined) {
+                    return '';
+                }
+                // 如果是对象或数组，转为JSON字符串
+                if (typeof value === 'object') {
+                    return escapeCSVField(JSON.stringify(value));
+                }
+                return escapeCSVField(String(value));
+            });
+            csv += row.join(',') + '\n';
+        }
+    });
+    
+    return csv;
+}
+
+function jsonToYAML(obj, indent = 0) {
+    const spaces = '  '.repeat(indent);
+    
+    if (obj === null || obj === undefined) {
+        return `${spaces}null`;
+    }
+    
+    if (typeof obj === 'boolean') {
+        return `${spaces}${obj}`;
+    }
+    
+    if (typeof obj === 'number') {
+        return `${spaces}${obj}`;
+    }
+    
+    if (typeof obj === 'string') {
+        // 如果字符串包含特殊字符，需要加引号
+        if (obj.includes(':') || obj.includes('#') || obj.includes('"') || obj.includes("'") || 
+            obj.includes('[') || obj.includes(']') || obj.includes('{') || obj.includes('}') ||
+            obj.includes('\n') || obj.includes('\t') || obj.trim() !== obj) {
+            return `${spaces}"${escapeYAMLString(obj)}"`;
+        }
+        return `${spaces}${obj}`;
+    }
+    
+    if (Array.isArray(obj)) {
+        if (obj.length === 0) {
+            return `${spaces}[]`;
+        }
+        
+        let yaml = '';
+        obj.forEach((item, index) => {
+            if (index === 0) {
+                yaml += `${spaces}- ${jsonToYAML(item, 0).trimStart()}`;
+            } else {
+                yaml += `\n${spaces}- ${jsonToYAML(item, 0).trimStart()}`;
+            }
+        });
+        return yaml;
+    }
+    
+    if (typeof obj === 'object') {
+        const keys = Object.keys(obj);
+        if (keys.length === 0) {
+            return `${spaces}{}`;
+        }
+        
+        let yaml = '';
+        keys.forEach((key, index) => {
+            const value = obj[key];
+            const keyYAML = escapeYAMLString(key);
+            const valueYAML = jsonToYAML(value, indent + 1);
+            
+            if (index === 0) {
+                yaml += `${spaces}${keyYAML}: ${valueYAML.trimStart()}`;
+            } else {
+                yaml += `\n${spaces}${keyYAML}: ${valueYAML.trimStart()}`;
+            }
+        });
+        return yaml;
+    }
+    
+    return `${spaces}${String(obj)}`;
+}
+
+function jsonToTSV(obj) {
+    if (!Array.isArray(obj)) {
+        return "TSV转换需要数组格式的JSON";
+    }
+    
+    if (obj.length === 0) {
+        return "";
+    }
+    
+    // 获取所有键（表头）
+    const headers = [];
+    obj.forEach(item => {
+        if (typeof item === 'object' && item !== null) {
+            Object.keys(item).forEach(key => {
+                if (!headers.includes(key)) {
+                    headers.push(key);
+                }
+            });
+        }
+    });
+    
+    // TSV头部
+    let tsv = headers.join('\t') + '\n';
+    
+    // 数据行
+    obj.forEach(item => {
+        if (typeof item === 'object' && item !== null) {
+            const row = headers.map(header => {
+                const value = item[header];
+                if (value === null || value === undefined) {
+                    return '';
+                }
+                // TSV中需要用引号包裹包含制表符、换行符或引号的字段
+                const str = String(value);
+                if (str.includes('\t') || str.includes('\n') || str.includes('\r') || str.includes('"')) {
+                    return `"${str.replace(/"/g, '""')}"`;
+                }
+                return str;
+            });
+            tsv += row.join('\t') + '\n';
+        }
+    });
+    
+    return tsv;
+}
+
+function escapeCSVField(field) {
+    const str = String(field);
+    if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+        return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+}
+
+function escapeYAMLString(str) {
+    return str.replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\t/g, '\\t');
 }
 
 function loadFromURLInput() {

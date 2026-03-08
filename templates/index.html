@@ -55,6 +55,14 @@
                     <div class="output-view-switcher">
                         <button id="json-view-btn" class="view-btn active">JSON</button>
                         <button id="xml-view-btn" class="view-btn">XML</button>
+                        <div class="converter-dropdown">
+                            <button class="view-btn">转换</button>
+                            <div class="converter-menu">
+                                <button class="converter-option" data-format="csv">CSV</button>
+                                <button class="converter-option" data-format="yaml">YAML</button>
+                                <button class="converter-option" data-format="tsv">TSV</button>
+                            </div>
+                        </div>
                     </div>
                     <button id="copy-btn" class="copy-btn" disabled>复制</button>
                 </div>
@@ -63,6 +71,15 @@
                 </div>
                 <div id="xml-view" class="view-content" style="display: none;">
                     <pre id="xml-output"></pre>
+                </div>
+                <div id="csv-view" class="view-content" style="display: none;">
+                    <pre id="csv-output"></pre>
+                </div>
+                <div id="yaml-view" class="view-content" style="display: none;">
+                    <pre id="yaml-output"></pre>
+                </div>
+                <div id="tsv-view" class="view-content" style="display: none;">
+                    <pre id="tsv-output"></pre>
                 </div>
                 <div id="copy-toast" class="copy-toast">已复制到剪贴板</div>
             </div>
