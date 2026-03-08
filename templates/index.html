@@ -13,9 +13,19 @@
             <div class="input-section">
                 <h2>输入 JSON</h2>
                 <textarea id="json-input" placeholder="在此粘贴 JSON..."></textarea>
-                <div class="action-buttons">
-                    <button id="format-btn" class="format-btn">格式化</button>
-                    <button id="compress-btn" class="compress-btn">压缩</button>
+                <div class="controls">
+                    <div class="action-buttons">
+                        <button id="format-btn" class="format-btn">格式化</button>
+                        <button id="compress-btn" class="compress-btn">压缩</button>
+                    </div>
+                    <div class="indent-selector">
+                        <label>缩进：</label>
+                        <select id="indent-select">
+                            <option value="2">2 空格</option>
+                            <option value="3">3 空格</option>
+                            <option value="4">4 空格</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <div class="output-section">

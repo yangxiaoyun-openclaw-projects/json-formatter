@@ -1,6 +1,7 @@
 // 页面加载时读取URL参数
 window.addEventListener('load', function() {
     loadFromURL();
+    loadIndentFromURL();
 });
 
 document.getElementById('format-btn').addEventListener('click', function() {
@@ -15,8 +16,20 @@ document.getElementById('compress-btn').addEventListener('click', function() {
     compressJSON();
 });
 
+document.getElementById('indent-select').addEventListener('change', function() {
+    currentIndent = parseInt(this.value);
+    updateIndentURL();
+    // 如果当前是格式化视图，重新格式化
+    if (currentView === 'formatted' && currentJSON) {
+        const output = document.getElementById('json-output');
+        output.innerHTML = renderJSON(currentJSON, 0);
+        bindToggleEvents();
+    }
+});
+
 let currentView = 'formatted'; // 'formatted' or 'compressed'
 let currentJSON = null;
+let currentIndent = 2;
 
 function formatJSON() {
     const input = document.getElementById('json-input').value.trim();
@@ -81,8 +94,22 @@ function compressJSON() {
 }
 
 function updateURL(json) {
-    const encoded = btoa(encodeURIComponent(json));
-    const newUrl = window.location.origin + window.location.pathname + '?json=' + encoded;
+    const params = new URLSearchParams();
+    params.set('json', btoa(encodeURIComponent(json)));
+    params.set('indent', currentIndent);
+    const newUrl = window.location.origin + window.location.pathname + '?' + params.toString();
+    window.history.pushState({json: json}, '', newUrl);
+}
+
+function updateIndentURL() {
+    if (!currentJSON) return;
+    const json = document.getElementById('json-input').value.trim();
+    if (!json) return;
+    
+    const params = new URLSearchParams();
+    params.set('json', btoa(encodeURIComponent(json)));
+    params.set('indent', currentIndent);
+    const newUrl = window.location.origin + window.location.pathname + '?' + params.toString();
     window.history.pushState({json: json}, '', newUrl);
 }
 
@@ -106,6 +133,15 @@ function loadFromURL() {
         } catch (e) {
             console.error('Failed to decode URL parameter:', e);
         }
+    }
+}
+
+function loadIndentFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const indent = params.get('indent');
+    if (indent && ['2', '3', '4'].includes(indent)) {
+        currentIndent = parseInt(indent);
+        document.getElementById('indent-select').value = indent;
     }
 }
 
@@ -146,8 +182,8 @@ function showCopyToast() {
 }
 
 function renderJSON(data, indent) {
-    const spaces = '  '.repeat(indent);
-    const nextSpaces = '  '.repeat(indent + 1);
+    const spaces = ' '.repeat(currentIndent).repeat(indent);
+    const nextSpaces = ' '.repeat(currentIndent).repeat(indent + 1);
     
     if (data === null) {
         return '<span class="json-null">null</span>';
