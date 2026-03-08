@@ -73,6 +73,15 @@
                                 <button class="converter-option" data-format="tsv">TSV</button>
                             </div>
                         </div>
+                        <div class="codegen-dropdown">
+                            <button class="view-btn">生成代码</button>
+                            <div class="codegen-menu">
+                                <button class="codegen-option" data-lang="typescript">TypeScript</button>
+                                <button class="codegen-option" data-lang="python">Python</button>
+                                <button class="codegen-option" data-lang="java">Java</button>
+                                <button class="codegen-option" data-lang="go">Go</button>
+                            </div>
+                        </div>
                     </div>
                     <button id="copy-btn" class="copy-btn" disabled>复制</button>
                 </div>
@@ -90,6 +99,18 @@
                 </div>
                 <div id="tsv-view" class="view-content" style="display: none;">
                     <pre id="tsv-output"></pre>
+                </div>
+                <div id="typescript-view" class="view-content" style="display: none;">
+                    <pre id="typescript-output"></pre>
+                </div>
+                <div id="python-view" class="view-content" style="display: none;">
+                    <pre id="python-output"></pre>
+                </div>
+                <div id="java-view" class="view-content" style="display: none;">
+                    <pre id="java-output"></pre>
+                </div>
+                <div id="go-view" class="view-content" style="display: none;">
+                    <pre id="go-output"></pre>
                 </div>
                 <div id="copy-toast" class="copy-toast">已复制到剪贴板</div>
             </div>

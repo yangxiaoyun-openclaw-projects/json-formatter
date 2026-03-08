@@ -83,6 +83,14 @@ document.querySelectorAll('.converter-option').forEach(btn => {
     });
 });
 
+// Add event listeners for code generation options
+document.querySelectorAll('.codegen-option').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const lang = this.getAttribute('data-lang');
+        generateCode(lang);
+    });
+});
+
 // Schema functionality
 document.getElementById('generate-schema-btn').addEventListener('click', generateSchema);
 document.getElementById('validate-schema-btn').addEventListener('click', validateSchema);
@@ -988,6 +996,308 @@ function showSchemaError(message) {
     const resultEl = document.getElementById('schema-result');
     resultEl.innerHTML = `<div class="schema-invalid">${message}</div>`;
     resultEl.style.display = 'block';
+}
+
+function generateCode(language) {
+    const input = document.getElementById('json-input').value.trim();
+    if (!input) {
+        document.getElementById(`${language}-output`).textContent = '';
+        return;
+    }
+    
+    try {
+        const parsed = JSON.parse(input);
+        let code;
+        
+        switch(language) {
+            case 'typescript':
+                code = generateTypeScript(parsed);
+                break;
+            case 'python':
+                code = generatePython(parsed);
+                break;
+            case 'java':
+                code = generateJava(parsed);
+                break;
+            case 'go':
+                code = generateGo(parsed);
+                break;
+            default:
+                code = `不支持的语言：${language}`;
+        }
+        
+        document.getElementById(`${language}-output`).innerHTML = highlightCode(code, language);
+        switchView(language);
+    } catch (e) {
+        document.getElementById(`${language}-output`).textContent = `生成失败：${e.message}`;
+        switchView(language);
+    }
+}
+
+function generateTypeScript(obj, className = 'GeneratedInterface') {
+    let ts = `interface ${className} {\n`;
+    
+    if (typeof obj === 'object' && obj !== null && !Array.isArray(obj)) {
+        Object.keys(obj).forEach(key => {
+            const value = obj[key];
+            const type = getTypeScriptType(value, key);
+            ts += `  ${key}${isRequired(value) ? '' : '?'}: ${type};\n`;
+        });
+    } else if (Array.isArray(obj) && obj.length > 0) {
+        const itemType = getTypeScriptType(obj[0], 'item');
+        ts += `  [index: number]: ${itemType};\n`;
+    } else {
+        const type = getTypeScriptType(obj, 'value');
+        ts += `  value: ${type};\n`;
+    }
+    
+    ts += '}\n';
+    return ts;
+}
+
+function generatePython(obj, className = 'GeneratedClass') {
+    let py = `from dataclasses import dataclass\nfrom typing import Optional, List, Dict, Any\n\n`;
+    
+    if (typeof obj === 'object' && obj !== null && !Array.isArray(obj)) {
+        py += `@dataclass\nclass ${className}:\n`;
+        Object.keys(obj).forEach(key => {
+            const value = obj[key];
+            const type = getPythonType(value);
+            const optional = isRequired(value) ? '' : 'Optional[';
+            const optionalClose = isRequired(value) ? '' : ']';
+            const defaultVal = isRequired(value) ? '' : ' = None';
+            py += `    ${key}: ${optional}${type}${optionalClose}${defaultVal}\n`;
+        });
+    } else {
+        py += `# Simple type annotation\n${className} = ${getPythonType(obj)}\n`;
+    }
+    
+    return py;
+}
+
+function generateJava(obj, className = 'GeneratedClass') {
+    let java = `public class ${className} {\n`;
+    
+    if (typeof obj === 'object' && obj !== null && !Array.isArray(obj)) {
+        Object.keys(obj).forEach(key => {
+            const value = obj[key];
+            const type = getJavaType(value);
+            const fieldName = toCamelCase(key);
+            const getterName = 'get' + capitalizeFirst(fieldName);
+            const setterName = 'set' + capitalizeFirst(fieldName);
+            
+            java += `    private ${type} ${fieldName};\n\n`;
+            java += `    public ${type} ${getterName}() {\n`;
+            java += `        return this.${fieldName};\n`;
+            java += `    }\n\n`;
+            java += `    public void ${setterName}(${type} ${fieldName}) {\n`;
+            java += `        this.${fieldName} = ${fieldName};\n`;
+            java += `    }\n\n`;
+        });
+        
+        java += '    @Override\n';
+        java += '    public String toString() {\n';
+        java += '        return "{\\" + \n';
+        const fields = Object.keys(obj).map(key => {
+            const fieldName = toCamelCase(key);
+            return `                "\\"${key}\\": \\"" + ${fieldName} + "\\"`;
+        }).join(' + ",\\" + \n');
+        java += fields + ';\n';
+        java += '    }\n';
+    } else {
+        const type = getJavaType(obj);
+        java += `    private ${type} value;\n\n`;
+        java += `    public ${type} getValue() {\n`;
+        java += `        return this.value;\n`;
+        java += `    }\n\n`;
+        java += `    public void setValue(${type} value) {\n`;
+        java += `        this.value = value;\n`;
+        java += `    }\n`;
+    }
+    
+    java += '}\n';
+    return java;
+}
+
+function generateGo(obj, structName = 'GeneratedStruct') {
+    let go = `type ${structName} struct {\n`;
+    
+    if (typeof obj === 'object' && obj !== null && !Array.isArray(obj)) {
+        Object.keys(obj).forEach(key => {
+            const value = obj[key];
+            const type = getGoType(value);
+            const fieldName = capitalizeFirst(toCamelCase(key));
+            go += `    ${fieldName} ${type} \`json:"${key}"\`\n`;
+        });
+    } else {
+        const type = getGoType(obj);
+        go += `    Value ${type} \`json:"value"\`\n`;
+    }
+    
+    go += '}\n';
+    return go;
+}
+
+function getTypeScriptType(value, key) {
+    if (Array.isArray(value)) {
+        if (value.length > 0) {
+            const itemType = getTypeScriptType(value[0], 'item');
+            return `${itemType}[]`;
+        }
+        return 'any[]';
+    }
+    
+    if (value === null) return 'null';
+    if (typeof value === 'object' && value !== null) {
+        // 如果是嵌套对象，递归生成
+        const props = Object.keys(value).map(k => {
+            const v = value[k];
+            return `${k}${isRequired(v) ? '' : '?'}: ${getTypeScriptType(v, k)}`;
+        }).join('; ');
+        return `{ ${props} }`;
+    }
+    
+    switch(typeof value) {
+        case 'string': return 'string';
+        case 'number': return 'number';
+        case 'boolean': return 'boolean';
+        default: return 'any';
+    }
+}
+
+function getPythonType(value) {
+    if (Array.isArray(value)) {
+        if (value.length > 0) {
+            const itemType = getPythonType(value[0]);
+            return `List[${itemType}]`;
+        }
+        return 'List[Any]';
+    }
+    
+    if (value === null) return 'Any';
+    if (typeof value === 'object' && value !== null) return 'Dict[str, Any]';
+    
+    switch(typeof value) {
+        case 'string': return 'str';
+        case 'number': 
+            return 'int' if (Number.isInteger(value)) else 'float';
+        case 'boolean': return 'bool';
+        default: return 'Any';
+    }
+}
+
+function getJavaType(value) {
+    if (Array.isArray(value)) {
+        if (value.length > 0) {
+            const itemType = getJavaType(value[0]);
+            return `List<${itemType}>`;
+        }
+        return 'List<Object>';
+    }
+    
+    if (value === null) return 'Object';
+    if (typeof value === 'object' && value !== null) return 'Map<String, Object>';
+    
+    switch(typeof value) {
+        case 'string': return 'String';
+        case 'number': 
+            return Number.isInteger(value) ? 'Integer' : 'Double';
+        case 'boolean': return 'Boolean';
+        default: return 'Object';
+    }
+}
+
+function getGoType(value) {
+    if (Array.isArray(value)) {
+        if (value.length > 0) {
+            const itemType = getGoType(value[0]);
+            return `[]${itemType}`;
+        }
+        return '[]interface{}';
+    }
+    
+    if (value === null) return 'interface{}';
+    if (typeof value === 'object' && value !== null) return 'map[string]interface{}';
+    
+    switch(typeof value) {
+        case 'string': return 'string';
+        case 'number': 
+            return Number.isInteger(value) ? 'int' : 'float64';
+        case 'boolean': return 'bool';
+        default: return 'interface{}';
+    }
+}
+
+function isRequired(value) {
+    return value !== null && value !== undefined;
+}
+
+function getPythonType(value) {
+    if (Array.isArray(value)) {
+        if (value.length > 0) {
+            const itemType = getPythonType(value[0]);
+            return `List[${itemType}]`;
+        }
+        return 'List[Any]';
+    }
+    
+    if (value === null) return 'Any';
+    if (typeof value === 'object' && value !== null) return 'Dict[str, Any]';
+    
+    switch(typeof value) {
+        case 'string': return 'str';
+        case 'number': 
+            return Number.isInteger(value) ? 'int' : 'float';
+        case 'boolean': return 'bool';
+        default: return 'Any';
+    }
+}
+
+function toCamelCase(str) {
+    return str.replace(/([-_][a-z])/g, group =>
+        group.toUpperCase().replace('-', '').replace('_', '')
+    );
+}
+
+function capitalizeFirst(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function highlightCode(code, language) {
+    // 简单的代码高亮
+    let highlighted = code;
+    
+    // TypeScript
+    if (language === 'typescript') {
+        highlighted = highlighted
+            .replace(/\b(interface|type|any|string|number|boolean|null|undefined|readonly)\b/g, '<span class="code-keyword">$1</span>')
+            .replace(/\b([A-Z][a-zA-Z0-9_]*)\b/g, '<span class="code-type">$1</span>')
+            .replace(/(".*?"|'.*?')/g, '<span class="code-string">$1</span>');
+    }
+    
+    // Python
+    if (language === 'python') {
+        highlighted = highlighted
+            .replace(/\b(def|class|import|from|Optional|List|Dict|Any|str|int|float|bool)\b/g, '<span class="code-keyword">$1</span>')
+            .replace(/\b(dataclass)\b/g, '<span class="code-function">$1</span>')
+            .replace(/#.*$/gm, '<span class="code-comment">$&</span>');
+    }
+    
+    // Java
+    if (language === 'java') {
+        highlighted = highlighted
+            .replace(/\b(public|private|class|void|String|Integer|Double|Boolean|Object|List|Map|Override)\b/g, '<span class="code-keyword">$1</span>')
+            .replace(/@\w+/g, '<span class="code-function">$&</span>');
+    }
+    
+    // Go
+    if (language === 'go') {
+        highlighted = highlighted
+            .replace(/\b(type|struct|func|string|int|float64|bool|interface)\b/g, '<span class="code-keyword">$1</span>')
+            .replace(/`json:".*?"`/g, '<span class="code-string">$&</span>');
+    }
+    
+    return highlighted;
 }
 
 function loadFromURLInput() {
