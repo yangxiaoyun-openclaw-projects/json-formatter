@@ -93,23 +93,23 @@ h2 {
 
 /* JSON syntax highlighting */
 .json-null {
-    color: #999;
+    color: #999;  /* 灰色 - 符合验收标准5 */
 }
 
 .json-boolean {
-    color: #d14;
+    color: #9c27b0;  /* 紫色 - 符合验收标准4 */
 }
 
 .json-number {
-    color: #099;
+    color: #ff9800;  /* 橙色 - 符合验收标准3 */
 }
 
 .json-string {
-    color: #6a0;
+    color: #4caf50;  /* 绿色 - 符合验收标准2 */
 }
 
 .json-key {
-    color: #333;
+    color: #2196f3;  /* 蓝色 - 符合验收标准1 */
 }
 
 .json-bracket {
