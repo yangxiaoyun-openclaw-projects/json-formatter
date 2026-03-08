@@ -83,6 +83,19 @@ document.querySelectorAll('.converter-option').forEach(btn => {
     });
 });
 
+// Schema functionality
+document.getElementById('generate-schema-btn').addEventListener('click', generateSchema);
+document.getElementById('validate-schema-btn').addEventListener('click', validateSchema);
+document.getElementById('schema-editor').addEventListener('dblclick', function() {
+    this.setAttribute('contenteditable', 'true');
+    this.focus();
+});
+
+// Auto-enable validate button when schema is modified
+document.getElementById('schema-editor').addEventListener('input', function() {
+    document.getElementById('validate-schema-btn').disabled = false;
+});
+
 document.getElementById('format-btn').addEventListener('click', function() {
     this.classList.add('active');
     document.getElementById('compress-btn').classList.remove('active');
@@ -754,6 +767,227 @@ function escapeCSVField(field) {
 
 function escapeYAMLString(str) {
     return str.replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\t/g, '\\t');
+}
+
+function generateSchema() {
+    const input = document.getElementById('json-input').value.trim();
+    if (!input) {
+        return;
+    }
+    
+    try {
+        const parsed = JSON.parse(input);
+        const schema = generateJSONSchema(parsed);
+        const schemaText = JSON.stringify(schema, null, 2);
+        document.getElementById('schema-editor').textContent = schemaText;
+        document.getElementById('validate-schema-btn').disabled = false;
+        document.getElementById('schema-editor').setAttribute('contenteditable', 'true');
+        document.getElementById('schema-result').style.display = 'none';
+    } catch (e) {
+        showSchemaError('无法生成Schema：JSON格式错误');
+    }
+}
+
+function generateJSONSchema(obj, path = '#') {
+    const schema = {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "description": `Schema generated from ${path}`,
+        "type": getJSONType(obj)
+    };
+    
+    if (Array.isArray(obj)) {
+        if (obj.length > 0) {
+            // 取第一个元素作为数组项类型参考
+            schema.items = generateJSONSchema(obj[0], `${path}/items`);
+        } else {
+            schema.items = {};
+        }
+        schema.minItems = 0;
+    } else if (typeof obj === 'object' && obj !== null) {
+        schema.properties = {};
+        schema.required = [];
+        
+        Object.keys(obj).forEach(key => {
+            schema.properties[key] = generateJSONSchema(obj[key], `${path}/${key}`);
+            // 如果值不是null/undefined，则视为必需字段
+            if (obj[key] !== null && obj[key] !== undefined) {
+                schema.required.push(key);
+            }
+        });
+        
+        schema.additionalProperties = false;
+    } else if (typeof obj === 'number') {
+        schema.type = "number";
+        schema.examples = [obj];
+    } else if (typeof obj === 'string') {
+        schema.type = "string";
+        schema.examples = [obj];
+    } else if (typeof obj === 'boolean') {
+        schema.type = "boolean";
+        schema.examples = [obj];
+    } else if (obj === null) {
+        schema.type = "null";
+    }
+    
+    return schema;
+}
+
+function getJSONType(value) {
+    if (Array.isArray(value)) return "array";
+    if (value === null) return "null";
+    if (typeof value === 'object') return "object";
+    return typeof value;
+}
+
+function validateSchema() {
+    const input = document.getElementById('json-input').value.trim();
+    const schemaText = document.getElementById('schema-editor').textContent;
+    
+    if (!input) {
+        showSchemaError('请先输入JSON');
+        return;
+    }
+    
+    if (!schemaText) {
+        showSchemaError('请先生成或编辑Schema');
+        return;
+    }
+    
+    try {
+        const data = JSON.parse(input);
+        const schema = JSON.parse(schemaText);
+        const errors = validateAgainstSchema(data, schema);
+        
+        if (errors.length === 0) {
+            showSchemaSuccess('✅ JSON符合Schema');
+        } else {
+            let errorHtml = '<div class="schema-invalid">❌ JSON不符合Schema：</div>';
+            errors.forEach(error => {
+                errorHtml += `<div class="schema-error">${error.path}: ${error.message}</div>`;
+            });
+            document.getElementById('schema-result').innerHTML = errorHtml;
+            document.getElementById('schema-result').style.display = 'block';
+        }
+    } catch (e) {
+        showSchemaError(`验证失败：${e.message}`);
+    }
+}
+
+function validateAgainstSchema(data, schema, path = '#') {
+    const errors = [];
+    
+    // 检查类型
+    if (schema.type) {
+        const actualType = getJSONType(data);
+        if (schema.type !== actualType) {
+            errors.push({
+                path: path,
+                message: `期望类型 ${schema.type}，实际类型 ${actualType}`
+            });
+        }
+    }
+    
+    // 检查对象属性
+    if (schema.type === 'object' && typeof data === 'object' && data !== null && !Array.isArray(data)) {
+        // 检查必需字段
+        if (schema.required) {
+            schema.required.forEach(key => {
+                if (!(key in data)) {
+                    errors.push({
+                        path: `${path}/${key}`,
+                        message: `缺少必需字段：${key}`
+                    });
+                }
+            });
+        }
+        
+        // 检查属性约束
+        if (schema.properties) {
+            Object.keys(data).forEach(key => {
+                if (schema.properties[key]) {
+                    const nestedErrors = validateAgainstSchema(data[key], schema.properties[key], `${path}/${key}`);
+                    errors.push(...nestedErrors);
+                } else if (schema.additionalProperties === false) {
+                    errors.push({
+                        path: `${path}/${key}`,
+                        message: `不允许的字段：${key}`
+                    });
+                }
+            });
+        }
+    }
+    
+    // 检查数组项
+    if (schema.type === 'array' && Array.isArray(data)) {
+        if (schema.items) {
+            data.forEach((item, index) => {
+                const nestedErrors = validateAgainstSchema(item, schema.items, `${path}/${index}`);
+                errors.push(...nestedErrors);
+            });
+        }
+        
+        if (schema.minItems !== undefined && data.length < schema.minItems) {
+            errors.push({
+                path: path,
+                message: `数组至少需要 ${schema.minItems} 项，实际 ${data.length} 项`
+            });
+        }
+        
+        if (schema.maxItems !== undefined && data.length > schema.maxItems) {
+            errors.push({
+                path: path,
+                message: `数组最多允许 ${schema.maxItems} 项，实际 ${data.length} 项`
+            });
+        }
+    }
+    
+    // 检查字符串约束
+    if (schema.type === 'string' && typeof data === 'string') {
+        if (schema.minLength !== undefined && data.length < schema.minLength) {
+            errors.push({
+                path: path,
+                message: `字符串长度至少 ${schema.minLength} 字符，实际 ${data.length} 字符`
+            });
+        }
+        
+        if (schema.maxLength !== undefined && data.length > schema.maxLength) {
+            errors.push({
+                path: path,
+                message: `字符串长度最多 ${schema.maxLength} 字符，实际 ${data.length} 字符`
+            });
+        }
+    }
+    
+    // 检查数字约束
+    if (schema.type === 'number' && typeof data === 'number') {
+        if (schema.minimum !== undefined && data < schema.minimum) {
+            errors.push({
+                path: path,
+                message: `数值不能小于 ${schema.minimum}`
+            });
+        }
+        
+        if (schema.maximum !== undefined && data > schema.maximum) {
+            errors.push({
+                path: path,
+                message: `数值不能大于 ${schema.maximum}`
+            });
+        }
+    }
+    
+    return errors;
+}
+
+function showSchemaSuccess(message) {
+    const resultEl = document.getElementById('schema-result');
+    resultEl.innerHTML = `<div class="schema-valid">${message}</div>`;
+    resultEl.style.display = 'block';
+}
+
+function showSchemaError(message) {
+    const resultEl = document.getElementById('schema-result');
+    resultEl.innerHTML = `<div class="schema-invalid">${message}</div>`;
+    resultEl.style.display = 'block';
 }
 
 function loadFromURLInput() {

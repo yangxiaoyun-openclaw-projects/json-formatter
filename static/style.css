@@ -440,6 +440,88 @@ h2 {
     background-color: #f5f5f5;
 }
 
+/* Schema section */
+.schema-section {
+    margin-top: 15px;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+}
+
+.schema-header {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.schema-btn {
+    padding: 6px 12px;
+    font-size: 14px;
+    background-color: #6f42c1;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.schema-btn:hover:not(:disabled) {
+    background-color: #59349c;
+}
+
+.schema-btn:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.schema-editor {
+    width: 100%;
+    min-height: 120px;
+    padding: 10px;
+    font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+    font-size: 13px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    resize: vertical;
+    outline: none;
+    white-space: pre;
+    overflow-x: auto;
+}
+
+.schema-editor[contenteditable="true"] {
+    background-color: white;
+    border-color: #4a90e2;
+}
+
+.schema-result {
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    display: none;
+}
+
+.schema-valid {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.schema-invalid {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.schema-error {
+    font-family: monospace;
+    font-size: 12px;
+    margin-top: 4px;
+    padding-left: 10px;
+    border-left: 2px solid #dc3545;
+}
+
 .format-btn {
     padding: 12px 30px;
     font-size: 16px;
