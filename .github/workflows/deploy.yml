@@ -18,6 +18,7 @@ jobs:
         host: ${{ secrets.ALIYUN_HOST }}
         username: ${{ secrets.ALIYUN_USERNAME }}
         password: ${{ secrets.ALIYUN_PASSWORD }}
+        timeout: 1m
         command_timeout: 10m
         script: |
           set -e
