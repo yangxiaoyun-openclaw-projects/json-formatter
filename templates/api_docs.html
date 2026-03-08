@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON格式化工具 - API文档</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .api-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .api-header {
+            margin-bottom: 40px;
+        }
+        
+        .api-header h1 {
+            margin-bottom: 10px;
+        }
+        
+        .api-header .subtitle {
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .api-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        body.dark-theme .api-section {
+            background-color: #2d2d2d;
+            border-color: #444;
+        }
+        
+        .api-section h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4a90e2;
+        }
+        
+        .endpoint {
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #4a90e2;
+            border-radius: 4px;
+        }
+        
+        body.dark-theme .endpoint {
+            background-color: #363636;
+        }
+        
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .method {
+            display: inline-block;
+            padding: 4px 8px;
+            background-color: #4a90e2;
+            color: white;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .path {
+            font-family: monospace;
+            font-size: 16px;
+            color: #333;
+        }
+        
+        body.dark-theme .path {
+            color: #e0e0e0;
+        }
+        
+        .endpoint-desc {
+            margin-bottom: 15px;
+            color: #555;
+        }
+        
+        body.dark-theme .endpoint-desc {
+            color: #ccc;
+        }
+        
+        .param-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        
+        .param-table th, .param-table td {
+            padding: 8px 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        
+        body.dark-theme .param-table th,
+        body.dark-theme .param-table td {
+            border-color: #444;
+        }
+        
+        .param-table th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+        
+        body.dark-theme .param-table th {
+            background-color: #363636;
+        }
+        
+        .required {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+        
+        .code-block {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin-bottom: 15px;
+        }
+        
+        body.dark-theme .code-block {
+            background-color: #2d2d2d;
+            border-color: #444;
+        }
+        
+        .response-example {
+            margin-top: 20px;
+        }
+        
+        .response-example h4 {
+            margin-bottom: 10px;
+        }
+        
+        .nav-buttons {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-btn {
+            padding: 10px 20px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+        }
+        
+        .nav-btn:hover {
+            background-color: #357abd;
+        }
+        
+        .nav-btn.secondary {
+            background-color: #6c757d;
+        }
+        
+        .nav-btn.secondary:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>JSON格式化工具 - API文档</h1>
+            <button id="theme-toggle" class="theme-toggle" title="切换主题">🌙</button>
+        </div>
+        
+        <div class="api-container">
+            <div class="api-header">
+                <h1>REST API 文档</h1>
+                <div class="subtitle">
+                    为开发者提供的JSON格式化、验证、转换API接口
+                </div>
+            </div>
+            
+            <div class="api-section">
+                <h2>📋 API 概览</h2>
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method">BASE URL</span>
+                        <span class="path">http://[your-domain]:5000</span>
+                    </div>
+                    <div class="endpoint-desc">
+                        所有API端点均支持跨域请求（CORS enabled），返回JSON格式数据。
+                    </div>
+                </div>
+            </div>
+            
+            <div class="api-section">
+                <h2>🔤 格式化API</h2>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method">POST</span>
+                        <span class="path">/api/format</span>
+                    </div>
+                    <div class="endpoint-desc">
+                        格式化JSON数据，添加缩进和换行。
+                    </div>
+                    
+                    <h4>请求参数</h4>
+                    <table class="param-table">
+                        <thead>
+                            <tr>
+                                <th>参数</th>
+                                <th>类型</th>
+                                <th>必填</th>
+                                <th>描述</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>json</td>
+                                <td>string</td>
+                                <td><span class="required">是</span></td>
+                                <td>要格式化的JSON字符串</td>
+                            </tr>
+                            <tr>
+                                <td>indent</td>
+                                <td>number</td>
+                                <td>否</td>
+                                <td>缩进空格数（默认：2）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h4>cURL 示例</h4>
+                    <div class="code-block">
+curl -X POST http://localhost:5000/api/format \
+  -H "Content-Type: application/json" \
+  -d '{"json": "{\"name\":\"John\",\"age\":30,\"city\":\"New York\"}", "indent": 4}'
+                    </div>
+                    
+                    <div class="response-example">
+                        <h4>响应示例</h4>
+                        <div class="code-block">
+{
+  "formatted": "{\n    \"name\": \"John\",\n    \"age\": 30,\n    \"city\": \"New York\"\n}",
+  "size": 65,
+  "valid": true
+}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="api-section">
+                <h2>🗜️ 压缩API</h2>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method">POST</span>
+                        <span class="path">/api/compress</span>
+                    </div>
+                    <div class="endpoint-desc">
+                        压缩/最小化JSON数据，移除所有不必要的空格和换行。
+                    </div>
+                    
+                    <h4>请求参数</h4>
+                    <table class="param-table">
+                        <thead>
+                            <tr>
+                                <th>参数</th>
+                                <th>类型</th>
+                                <th>必填</th>
+                                <th>描述</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>json</td>
+                                <td>string</td>
+                                <td><span class="required">是</span></td>
+                                <td>要压缩的JSON字符串</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h4>cURL 示例</h4>
+                    <div class="code-block">
+curl -X POST http://localhost:5000/api/compress \
+  -H "Content-Type: application/json" \
+  -d '{"json": "{\\n    \\"name\\": \\"John\\",\\n    \\"age\\": 30,\\n    \\"city\\": \\"New York\\"\\n}"}'
+                    </div>
+                    
+                    <div class="response-example">
+                        <h4>响应示例</h4>
+                        <div class="code-block">
+{
+  "compressed": "{\"name\":\"John\",\"age\":30,\"city\":\"New York\"}",
+  "reduction": 12,
+  "size": 41,
+  "valid": true
+}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="api-section">
+                <h2>✅ 验证API</h2>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method">POST</span>
+                        <span class="path">/api/validate</span>
+                    </div>
+                    <div class="endpoint-desc">
+                        验证JSON语法并提供修复建议。
+                    </div>
+                    
+                    <h4>请求参数</h4>
+                    <table class="param-table">
+                        <thead>
+                            <tr>
+                                <th>参数</th>
+                                <th>类型</th>
+                                <th>必填</th>
+                                <th>描述</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>json</td>
+                                <td>string</td>
+                                <td><span class="required">是</span></td>
+                                <td>要验证的JSON字符串</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h4>cURL 示例</h4>
+                    <div class="code-block">
+curl -X POST http://localhost:5000/api/validate \
+  -H "Content-Type: application/json" \
+  -d '{"json": "{\\"name\\": \\"John\\", \\"age\\": 30, \\"city\\": \\"New York\\""}'
+                    </div>
+                    
+                    <div class="response-example">
+                        <h4>成功响应</h4>
+                        <div class="code-block">
+{
+  "issues": [],
+  "size": 47,
+  "structure": "object",
+  "valid": true
+}
+                        </div>
+                        
+                        <h4>错误响应</h4>
+                        <div class="code-block">
+{
+  "error": "Expecting ',' delimiter: line 1 column 44 (char 43)",
+  "suggestions": ["Check for missing commas between items"],
+  "valid": false
+}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="api-section">
+                <h2>🔄 转换API</h2>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method">POST</span>
+                        <span class="path">/api/convert</span>
+                    </div>
+                    <div class="endpoint-desc">
+                        将JSON转换为其他格式（CSV、YAML、XML）。
+                    </div>
+                    
+                    <h4>请求参数</h4>
+                    <table class="param-table">
+                        <thead>
+                            <tr>
+                                <th>参数</th>
+                                <th>类型</th>
+                                <th>必填</th>
+                                <th>描述</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>json</td>
+                                <td>string</td>
+                                <td><span class="required">是</span></td>
+                                <td>要转换的JSON字符串</td>
+                            </tr>
+                            <tr>
+                                <td>format</td>
+                                <td>string</td>
+                                <td>否</td>
+                                <td>目标格式：csv、yaml、xml（默认：csv）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h4>cURL 示例</h4>
+                    <div class="code-block">
+# 转换为CSV
+curl -X POST http://localhost:5000/api/convert \
+  -H "Content-Type: application/json" \
+  -d '{"json": "[{\\"name\\": \\"John\\", \\"age\\": 30}, {\\"name\\": \\"Jane\\", \\"age\\": 25}]", "format": "csv"}'
+
+# 转换为YAML
+curl -X POST http://localhost:5000/api/convert \
+  -H "Content-Type: application/json" \
+  -d '{"json": "{\\"user\\": {\\"name\\": \\"John\\", \\"age\\": 30}}", "format": "yaml"}'
+
+# 转换为XML
+curl -X POST http://localhost:5000/api/convert \
+  -H "Content-Type: application/json" \
+  -d '{"json": "{\\"person\\": {\\"name\\": \\"John\\", \\"age\\": 30}}", "format": "xml"}'
+                    </div>
+                </div>
+            </div>
+            
+            <div class="api-section">
+                <h2>📦 批量处理API</h2>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method">POST</span>
+                        <span class="path">/api/batch</span>
+                    </div>
+                    <div class="endpoint-desc">
+                        批量处理多个JSON文件（格式化、压缩）。
+                    </div>
+                    
+                    <h4>请求参数（multipart/form-data）</h4>
+                    <table class="param-table">
+                        <thead>
+                            <tr>
+                                <th>参数</th>
+                                <th>类型</th>
+                                <th>必填</th>
+                                <th>描述</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>files[]</td>
+                                <td>file[]</td>
+                                <td><span class="required">是</span></td>
+                                <td>多个JSON文件</td>
+                            </tr>
+                            <tr>
+                                <td>operation</td>
+                                <td>string</td>
+                                <td>否</td>
+                                <td>操作类型：format、compress（默认：format）</td>
+                            </tr>
+                            <tr>
+                                <td>format</td>
+                                <td>string</td>
+                                <td>否</td>
+                                <td>输出格式：formatted、compressed（默认：formatted）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h4>cURL 示例</h4>
+                    <div class="code-block">
+curl -X POST http://localhost:5000/api/batch \
+  -F "files[]=@data1.json" \
+  -F "files[]=@data2.json" \
+  -F "operation=format" \
+  -F "format=formatted"
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method">POST</span>
+                        <span class="path">/api/download_batch</span>
+                    </div>
+                    <div class="endpoint-desc">
+                        下载批量处理结果为ZIP文件。
+                    </div>
+                    
+                    <h4>请求参数</h4>
+                    <table class="param-table">
+                        <thead>
+                            <tr>
+                                <th>参数</th>
+                                <th>类型</th>
+                                <th>必填</th>
+                                <th>描述</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>files</td>
+                                <td>array</td>
+                                <td><span class="required">是</span></td>
+                                <td>文件数组，每个元素包含filename和content</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h4>请求示例</h4>
+                    <div class="code-block">
+{
+  "files": [
+    {
+      "filename": "data1_formatted.json",
+      "content": "{\\n  \\"name\\": \\"John\\"\\n}"
+    },
+    {
+      "filename": "data2_formatted.json",
+      "content": "{\\n  \\"name\\": \\"Jane\\"\\n}"
+    }
+  ]
+}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="api-section">
+                <h2>📖 错误码</h2>
+                <table class="param-table">
+                    <thead>
+                        <tr>
+                            <th>状态码</th>
+                            <th>描述</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>200</td>
+                            <td>成功</td>
+                        </tr>
+                        <tr>
+                            <td>400</td>
+                            <td>请求参数错误或JSON格式无效</td>
+                        </tr>
+                        <tr>
+                            <td>500</td>
+                            <td>服务器内部错误</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="nav-buttons">
+                <a href="/" class="nav-btn">返回主页</a>
+                <a href="#top" class="nav-btn secondary">回到顶部</a>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/app.js"></script>
+    <script>
+        // Initialize theme
+        const savedTheme = localStorage.getItem('json-formatter-theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            document.getElementById('theme-toggle').textContent = '☀️';
+        } else {
+            document.getElementById('theme-toggle').textContent = '🌙';
+        }
+        
+        // Theme toggle functionality
+        document.getElementById('theme-toggle').addEventListener('click', function() {
+            const body = document.body;
+            const themeToggle = document.getElementById('theme-toggle');
+            
+            if (body.classList.contains('dark-theme')) {
+                body.classList.remove('dark-theme');
+                themeToggle.textContent = '🌙';
+                localStorage.setItem('json-formatter-theme', 'light');
+            } else {
+                body.classList.add('dark-theme');
+                themeToggle.textContent = '☀️';
+                localStorage.setItem('json-formatter-theme', 'dark');
+            }
+        });
+    </script>
+</body>
+</html>

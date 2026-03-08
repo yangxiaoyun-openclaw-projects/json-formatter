@@ -245,6 +245,37 @@ body.dark-theme .theme-toggle:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+.header-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.api-docs-btn {
+    background: none;
+    border: 1px solid #4a90e2;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #4a90e2;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.api-docs-btn:hover {
+    background-color: rgba(74, 144, 226, 0.1);
+    transform: scale(1.05);
+}
+
+body.dark-theme .api-docs-btn {
+    border-color: #82aaff;
+    color: #82aaff;
+}
+
+body.dark-theme .api-docs-btn:hover {
+    background-color: rgba(130, 170, 255, 0.1);
+}
+
 h1 {
     color: #333;
     margin-bottom: 0;
