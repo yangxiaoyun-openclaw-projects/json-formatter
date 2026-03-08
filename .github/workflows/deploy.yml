@@ -19,7 +19,18 @@ jobs:
         username: ${{ secrets.ALIYUN_USERNAME }}
         password: ${{ secrets.ALIYUN_PASSWORD }}
         script: |
+          # 创建目录并克隆（首次）
+          mkdir -p /home/yangxiaoyun/workspace/online
+          if [ ! -d "/home/yangxiaoyun/workspace/online/json-formatter" ]; then
+            cd /home/yangxiaoyun/workspace/online
+            git clone https://github.com/yangxiaoyun-openclaw-projects/json-formatter.git
+          fi
+          
           cd /home/yangxiaoyun/workspace/online/json-formatter
           git pull origin master
           pip3 install -r requirements.txt
-          sudo systemctl restart json-formatter || echo "Service not set up yet"
+          
+          # 使用 nohup 后台运行
+          pkill -f "python.*app.py" || true
+          nohup python3 app.py > /tmp/json-formatter.log 2>&1 &
+          echo "Service started on port 5000"
