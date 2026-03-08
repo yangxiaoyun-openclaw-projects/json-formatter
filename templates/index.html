@@ -113,6 +113,7 @@
                             </div>
                         </div>
                         <button id="compare-mode-btn" class="view-btn">比较</button>
+                        <button id="batch-mode-btn" class="view-btn">批量</button>
                     </div>
                     <button id="copy-btn" class="copy-btn" disabled>复制</button>
                 </div>
@@ -142,6 +143,37 @@
                 </div>
                 <div id="go-view" class="view-content" style="display: none;">
                     <pre id="go-output"></pre>
+                </div>
+                <div id="batch-view" class="view-content" style="display: none;">
+                    <div class="batch-container">
+                        <div class="batch-upload-area" id="batch-drop-zone">
+                            <div class="batch-upload-icon">📁</div>
+                            <div class="batch-upload-text">拖拽JSON文件到这里，或点击选择</div>
+                            <input type="file" id="batch-file-input" multiple accept=".json,application/json">
+                        </div>
+                        <div class="batch-controls">
+                            <div class="batch-format-select">
+                                <label>输出格式：</label>
+                                <select id="batch-output-format">
+                                    <option value="formatted">格式化JSON</option>
+                                    <option value="compressed">压缩JSON</option>
+                                    <option value="csv">CSV</option>
+                                    <option value="yaml">YAML</option>
+                                </select>
+                            </div>
+                            <button id="batch-process-btn" class="batch-process-btn" disabled>开始处理</button>
+                            <button id="batch-export-btn" class="batch-export-btn" disabled>导出全部</button>
+                        </div>
+                        <div class="batch-file-list" id="batch-file-list">
+                            <!-- 文件列表会动态添加到这里 -->
+                        </div>
+                        <div class="batch-progress" id="batch-progress" style="display: none;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progress-fill"></div>
+                            </div>
+                            <div class="progress-text" id="progress-text">处理中...</div>
+                        </div>
+                    </div>
                 </div>
                 <div id="compare-view" class="view-content" style="display: none;">
                     <div class="compare-container">
