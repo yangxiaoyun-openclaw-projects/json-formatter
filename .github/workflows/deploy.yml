@@ -21,7 +21,7 @@ jobs:
         timeout: 1m
         command_timeout: 10m
         script: |
-          set -e
+          echo "=== Starting deployment ==="
           
           # 创建目录并克隆（首次）
           mkdir -p /home/yangxiaoyun/workspace/online
@@ -43,22 +43,28 @@ jobs:
             fi
           done
           
+          echo "=== Installing dependencies ==="
           pip3 install -r requirements.txt
           
-          # 停止旧进程
+          echo "=== Stopping old process ==="
           pkill -f "python3 app.py" 2>/dev/null || true
           sleep 1
           
-          # 使用 nohup 启动后台服务
+          echo "=== Starting new process ==="
+          cd /home/yangxiaoyun/workspace/online/json-formatter
           nohup python3 app.py > /tmp/json-formatter.log 2>&1 &
-          echo $! > /tmp/json-formatter.pid
+          PID=$!
+          echo $PID > /tmp/json-formatter.pid
+          echo "Started with PID: $PID"
           sleep 3
           
-          # 检查服务
-          if kill -0 $(cat /tmp/json-formatter.pid) 2>/dev/null; then
-            echo "✅ Service started with PID $(cat /tmp/json-formatter.pid)"
+          echo "=== Checking service ==="
+          if kill -0 $PID 2>/dev/null; then
+            echo "✅ Service started with PID $PID"
           else
             echo "❌ Failed to start service"
             cat /tmp/json-formatter.log
             exit 1
           fi
+          
+          echo "=== Deployment completed ==="
