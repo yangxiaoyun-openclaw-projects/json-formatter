@@ -56,6 +56,16 @@ document.getElementById('url-input').addEventListener('keypress', function(e) {
     }
 });
 
+document.getElementById('validation-toggle').addEventListener('change', function() {
+    if (document.getElementById('json-input').value.trim()) {
+        validateJSON();
+    }
+});
+
+document.getElementById('fix-btn').addEventListener('click', function() {
+    provideFixSuggestion();
+});
+
 document.getElementById('format-btn').addEventListener('click', function() {
     this.classList.add('active');
     document.getElementById('compress-btn').classList.remove('active');
@@ -195,6 +205,221 @@ function loadIndentFromURL() {
         currentIndent = parseInt(indent);
         document.getElementById('indent-select').value = indent;
     }
+}
+
+function formatJSON() {
+    const input = document.getElementById('json-input').value.trim();
+    const output = document.getElementById('json-output');
+    const copyBtn = document.getElementById('copy-btn');
+    
+    if (!input) {
+        output.innerHTML = '';
+        copyBtn.disabled = true;
+        clearURL();
+        currentJSON = null;
+        clearValidation();
+        return;
+    }
+    
+    validateJSON();
+    
+    try {
+        const parsed = JSON.parse(input);
+        currentJSON = parsed;
+        currentView = 'formatted';
+        output.innerHTML = renderJSON(parsed, 0);
+        output.classList.remove('error');
+        copyBtn.disabled = false;
+        bindToggleEvents();
+        updateURL(input);
+    } catch (e) {
+        output.textContent = 'JSON 格式错误';
+        output.classList.add('error');
+        copyBtn.disabled = true;
+        clearURL();
+        currentJSON = null;
+    }
+}
+
+function compressJSON() {
+    const input = document.getElementById('json-input').value.trim();
+    const output = document.getElementById('json-output');
+    const copyBtn = document.getElementById('copy-btn');
+    
+    if (!input) {
+        output.innerHTML = '';
+        copyBtn.disabled = true;
+        clearURL();
+        currentJSON = null;
+        clearValidation();
+        return;
+    }
+    
+    validateJSON();
+    
+    try {
+        const parsed = JSON.parse(input);
+        currentJSON = parsed;
+        currentView = 'compressed';
+        const compressed = JSON.stringify(parsed);
+        output.textContent = compressed;
+        output.classList.remove('error');
+        copyBtn.disabled = false;
+        updateURL(input);
+    } catch (e) {
+        output.textContent = 'JSON 格式错误';
+        output.classList.add('error');
+        copyBtn.disabled = true;
+        clearURL();
+        currentJSON = null;
+    }
+}
+
+function validateJSON() {
+    const input = document.getElementById('json-input').value.trim();
+    const validationResult = document.getElementById('validation-result');
+    const fixBtn = document.getElementById('fix-btn');
+    
+    if (!document.getElementById('validation-toggle').checked || !input) {
+        validationResult.innerHTML = '';
+        fixBtn.disabled = true;
+        removeInputError();
+        return;
+    }
+    
+    try {
+        JSON.parse(input);
+        validationResult.innerHTML = '<div class="validation-success">✅ JSON语法正确</div>';
+        fixBtn.disabled = true;
+        removeInputError();
+    } catch (e) {
+        const errorInfo = parseJSONError(e, input);
+        const lines = input.split('\n');
+        let errorHtml = `<div class="validation-error"><strong>第${errorInfo.line}行：</strong> ${errorInfo.message}</div>`;
+        
+        // 显示上下文行
+        const startLine = Math.max(0, errorInfo.line - 2);
+        const endLine = Math.min(lines.length - 1, errorInfo.line);
+        errorHtml += '<div style="margin-top: 8px; font-family: monospace; font-size: 12px; background: white; padding: 8px; border-radius: 4px;">';
+        for (let i = startLine; i <= endLine; i++) {
+            const lineNum = i + 1;
+            const lineClass = lineNum === errorInfo.line ? 'input-error' : '';
+            const linePrefix = lineNum === errorInfo.line ? `<span class="line-number">${lineNum}:</span>` : `${lineNum}:`;
+            errorHtml += `<div class="${lineClass}" style="margin: 2px 0; padding: 2px 4px;">${linePrefix} ${escapeHtml(lines[i] || '')}</div>`;
+        }
+        errorHtml += '</div>';
+        
+        validationResult.innerHTML = errorHtml;
+        fixBtn.disabled = false;
+        highlightInputError(errorInfo.line);
+    }
+}
+
+function parseJSONError(error, input) {
+    const lines = input.split('\n');
+    let line = 1;
+    let message = error.message;
+    
+    // 尝试从错误消息中提取位置信息
+    const match = error.message.match(/position\s+(\d+)/i) || error.message.match(/at position (\d+)/i);
+    if (match) {
+        const position = parseInt(match[1]);
+        let charCount = 0;
+        for (let i = 0; i < lines.length; i++) {
+            if (charCount + lines[i].length + 1 > position) {
+                line = i + 1;
+                break;
+            }
+            charCount += lines[i].length + 1; // +1 for newline
+        }
+    }
+    
+    // 简化错误消息
+    if (message.includes('Unexpected token')) {
+        message = '语法错误：意外的标记';
+    } else if (message.includes('Unexpected end')) {
+        message = 'JSON不完整';
+    } else if (message.includes('Unexpected number')) {
+        message = '数字格式错误';
+    } else if (message.includes('Unexpected string')) {
+        message = '字符串格式错误';
+    } else if (message.includes('expected property name')) {
+        message = '缺少属性名或引号';
+    }
+    
+    return { line, message };
+}
+
+function highlightInputError(lineNumber) {
+    const textarea = document.getElementById('json-input');
+    const lines = textarea.value.split('\n');
+    const start = lines.slice(0, lineNumber - 1).join('\n').length + (lineNumber > 1 ? 1 : 0);
+    const length = lines[lineNumber - 1].length;
+    
+    // 滚动到错误行
+    textarea.focus();
+    textarea.setSelectionRange(start, start + length);
+}
+
+function removeInputError() {
+    const textarea = document.getElementById('json-input');
+    textarea.classList.remove('input-error');
+}
+
+function provideFixSuggestion() {
+    const input = document.getElementById('json-input').value.trim();
+    let fixed = input;
+    
+    // 简单的修复尝试
+    // 1. 缺少闭合引号
+    fixed = fixed.replace(/([{:,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*[:}])/g, '$1"$2"$3');
+    
+    // 2. 修复单引号（仅当双引号修复失败时）
+    try {
+        JSON.parse(fixed);
+    } catch (e) {
+        fixed = input.replace(/'/g, '"');
+    }
+    
+    // 3. 修复未转义的控制字符
+    fixed = fixed.replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\r/g, '\r');
+    
+    // 4. 修复布尔值小写
+    fixed = fixed.replace(/:\s*true(?=[,\]}])/gi, ': true').replace(/:\s*false(?=[,\]}])/gi, ': false');
+    fixed = fixed.replace(/:\s*null(?=[,\]}])/gi, ': null');
+    
+    if (fixed !== input) {
+        document.getElementById('json-input').value = fixed;
+        validateJSON();
+        showFixToast('已尝试修复一些常见错误');
+    } else {
+        showFixToast('无法自动修复，请手动检查错误');
+    }
+}
+
+function showFixToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'copy-toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }, 2000);
+    }, 10);
+}
+
+function clearValidation() {
+    document.getElementById('validation-result').innerHTML = '';
+    document.getElementById('fix-btn').disabled = true;
+    removeInputError();
 }
 
 function loadFromURLInput() {
