@@ -1,9 +1,11 @@
 document.getElementById('format-btn').addEventListener('click', function() {
     const input = document.getElementById('json-input').value.trim();
     const output = document.getElementById('json-output');
+    const copyBtn = document.getElementById('copy-btn');
     
     if (!input) {
         output.innerHTML = '';
+        copyBtn.disabled = true;
         return;
     }
     
@@ -11,12 +13,45 @@ document.getElementById('format-btn').addEventListener('click', function() {
         const parsed = JSON.parse(input);
         output.innerHTML = renderJSON(parsed, 0);
         output.classList.remove('error');
+        copyBtn.disabled = false;
         bindToggleEvents();
     } catch (e) {
         output.textContent = 'JSON 格式错误';
         output.classList.add('error');
+        copyBtn.disabled = true;
     }
 });
+
+// Copy functionality
+document.getElementById('copy-btn').addEventListener('click', function() {
+    const output = document.getElementById('json-output');
+    const text = output.textContent;
+    
+    if (!text || text === 'JSON 格式错误') {
+        return;
+    }
+    
+    navigator.clipboard.writeText(text).then(() => {
+        showCopyToast();
+    }).catch(err => {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showCopyToast();
+    });
+});
+
+function showCopyToast() {
+    const toast = document.getElementById('copy-toast');
+    toast.classList.add('show');
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 2000);
+}
 
 function renderJSON(data, indent) {
     const spaces = '  '.repeat(indent);

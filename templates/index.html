@@ -16,8 +16,12 @@
                 <button id="format-btn">格式化</button>
             </div>
             <div class="output-section">
-                <h2>格式化结果</h2>
+                <div class="output-header">
+                    <h2>格式化结果</h2>
+                    <button id="copy-btn" class="copy-btn" disabled>复制</button>
+                </div>
                 <pre id="json-output"></pre>
+                <div id="copy-toast" class="copy-toast">已复制到剪贴板</div>
             </div>
         </div>
     </div>
