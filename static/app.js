@@ -660,11 +660,19 @@ function switchView(viewType) {
     if (viewType === 'json') {
         document.getElementById('json-view-btn').classList.add('active');
         document.getElementById('json-view').style.display = 'block';
+        document.getElementById('copy-btn').disabled = !document.getElementById('json-output').textContent;
     } else if (viewType === 'xml') {
         document.getElementById('xml-view-btn').classList.add('active');
         document.getElementById('xml-view').style.display = 'block';
-    } else if (['csv', 'yaml', 'tsv'].includes(viewType)) {
+        document.getElementById('copy-btn').disabled = !document.getElementById('xml-output').textContent;
+    } else if (viewType === 'compare') {
+        document.getElementById('compare-mode-btn').classList.add('active');
+        document.getElementById('compare-view').style.display = 'block';
+        document.getElementById('copy-btn').disabled = true;
+        compareJSONs();
+    } else if (['csv', 'yaml', 'tsv', 'typescript', 'python', 'java', 'go'].includes(viewType)) {
         document.getElementById(`${viewType}-view`).style.display = 'block';
+        document.getElementById('copy-btn').disabled = !document.getElementById(`${viewType}-output`).textContent;
     }
 }
 
@@ -1689,3 +1697,208 @@ function toggleTheme() {
         localStorage.setItem('json-formatter-theme', 'dark');
     }
 }
+
+
+// Compare functionality
+document.getElementById('compare-mode-btn').addEventListener('click', function() {
+    switchView('compare');
+});
+
+document.getElementById('copy-diff-btn').addEventListener('click', copyDiffResult);
+
+// Auto-compare when either input changes
+document.getElementById('compare-input-1').addEventListener('input', compareJSONs);
+document.getElementById('compare-input-2').addEventListener('input', compareJSONs);
+
+function compareJSONs() {
+    const input1 = document.getElementById('compare-input-1').value.trim();
+    const input2 = document.getElementById('compare-input-2').value.trim();
+    
+    let json1, json2;
+    let valid1 = false, valid2 = false;
+    
+    try {
+        json1 = input1 ? JSON.parse(input1) : null;
+        valid1 = true;
+    } catch (e) {
+        document.getElementById('compare-output-1').innerHTML = `<div style="color: #d32f2f;">无效JSON: ${escapeHtml(e.message)}</div>`;
+    }
+    
+    try {
+        json2 = input2 ? JSON.parse(input2) : null;
+        valid2 = true;
+    } catch (e) {
+        document.getElementById('compare-output-2').innerHTML = `<div style="color: #d32f2f;">无效JSON: ${escapeHtml(e.message)}</div>`;
+    }
+    
+    if (!valid1 || !valid2) {
+        if (valid1 && json1 !== null) {
+            displayFormattedJSON(json1, 'compare-output-1', false);
+        }
+        if (valid2 && json2 !== null) {
+            displayFormattedJSON(json2, 'compare-output-2', false);
+        }
+        return;
+    }
+    
+    if (json1 === null || json2 === null) {
+        document.getElementById('compare-output-1').innerHTML = json1 === null ? '<div style="color: #999;">无输入</div>' : formatJSONString(JSON.stringify(json1, null, 2));
+        document.getElementById('compare-output-2').innerHTML = json2 === null ? '<div style="color: #999;">无输入</div>' : formatJSONString(JSON.stringify(json2, null, 2));
+        document.getElementById('diff-summary').innerHTML = '<div style="color: #999;">请输入两个JSON进行比较</div>';
+        document.getElementById('diff-stats').innerHTML = '';
+        return;
+    }
+    
+    // Find differences
+    const diff = findDifferences(json1, json2);
+    const { added, removed, changed } = diff;
+    
+    // Display formatted JSON with highlights
+    displayComparison(json1, json2, diff);
+    
+    // Show summary
+    let summary = '';
+    if (added.length === 0 && removed.length === 0 && changed.length === 0) {
+        summary = '<div style="color: #4caf50;">✅ JSON完全相同</div>';
+    } else {
+        if (added.length > 0) {
+            summary += `<div><span style="color: #4caf50;">+${added.length} 个新增字段</span></div>`;
+        }
+        if (removed.length > 0) {
+            summary += `<div><span style="color: #d32f2f;">-${removed.length} 个删除字段</span></div>`;
+        }
+        if (changed.length > 0) {
+            summary += `<div><span style="color: #ff9800;">${changed.length} 个修改字段</span></div>`;
+        }
+    }
+    
+    document.getElementById('diff-summary').innerHTML = summary;
+    document.getElementById('diff-stats').innerHTML = `
+        <div>总字段数: ${countKeys(json1)} → ${countKeys(json2)}</div>
+        <div>差异字段: ${added.length + removed.length + changed.length}</div>
+    `;
+}
+
+function findDifferences(obj1, obj2, path = '') {
+    const added = [];
+    const removed = [];
+    const changed = [];
+    
+    const keys1 = obj1 ? Object.keys(obj1) : [];
+    const keys2 = obj2 ? Object.keys(obj2) : [];
+    
+    // Find removed keys
+    keys1.forEach(key => {
+        if (!keys2.includes(key)) {
+            removed.push({
+                path: path ? `${path}.${key}` : key,
+                value: obj1[key]
+            });
+        }
+    });
+    
+    // Find added keys
+    keys2.forEach(key => {
+        if (!keys1.includes(key)) {
+            added.push({
+                path: path ? `${path}.${key}` : key,
+                value: obj2[key]
+            });
+        }
+    });
+    
+    // Find changed keys
+    keys1.forEach(key => {
+        if (keys2.includes(key)) {
+            const value1 = obj1[key];
+            const value2 = obj2[key];
+            
+            if (typeof value1 === 'object' && typeof value2 === 'object' && value1 !== null && value2 !== null) {
+                // Recursively compare nested objects
+                const nestedDiff = findDifferences(value1, value2, path ? `${path}.${key}` : key);
+                added.push(...nestedDiff.added);
+                removed.push(...nestedDiff.removed);
+                changed.push(...nestedDiff.changed);
+            } else if (JSON.stringify(value1) !== JSON.stringify(value2)) {
+                changed.push({
+                    path: path ? `${path}.${key}` : key,
+                    oldValue: value1,
+                    newValue: value2
+                });
+            }
+        }
+    });
+    
+    return { added, removed, changed };
+}
+
+function countKeys(obj) {
+    if (!obj || typeof obj !== 'object') return 0;
+    let count = Object.keys(obj).length;
+    for (const key in obj) {
+        if (obj[key] && typeof obj[key] === 'object') {
+            count += countKeys(obj[key]);
+        }
+    }
+    return count;
+}
+
+function displayComparison(obj1, obj2, diff) {
+    const formatted1 = formatJSONString(JSON.stringify(obj1, null, 2));
+    const formatted2 = formatJSONString(JSON.stringify(obj2, null, 2));
+    
+    // Apply highlighting based on differences
+    let highlighted1 = applyDiffHighlighting(formatted1, diff, 'removed');
+    let highlighted2 = applyDiffHighlighting(formatted2, diff, 'added');
+    
+    document.getElementById('compare-output-1').innerHTML = highlighted1;
+    document.getElementById('compare-output-2').innerHTML = highlighted2;
+}
+
+function applyDiffHighlighting(jsonString, diff, type) {
+    let result = jsonString;
+    
+    if (type === 'removed') {
+        diff.removed.forEach(item => {
+            const path = item.path.replace(/\./g, '\\.');
+            const regex = new RegExp(`"${path}"\\s*:\\s*"?(.+?)"?[,}]`, 'g');
+            result = result.replace(regex, match => `<span class="diff-removed">${match}</span>`);
+        });
+        
+        diff.changed.forEach(item => {
+            const path = item.path.replace(/\./g, '\\.');
+            const regex = new RegExp(`"${path}"\\s*:\\s*"?(.+?)"?[,}]`, 'g');
+            result = result.replace(regex, match => `<span class="diff-changed">${match}</span>`);
+        });
+    } else if (type === 'added') {
+        diff.added.forEach(item => {
+            const path = item.path.replace(/\./g, '\\.');
+            const regex = new RegExp(`"${path}"\\s*:\\s*"?(.+?)"?[,}]`, 'g');
+            result = result.replace(regex, match => `<span class="diff-added">${match}</span>`);
+        });
+        
+        diff.changed.forEach(item => {
+            const path = item.path.replace(/\./g, '\\.');
+            const regex = new RegExp(`"${path}"\\s*:\\s*"?(.+?)"?[,}]`, 'g');
+            result = result.replace(regex, match => `<span class="diff-changed">${match}</span>`);
+        });
+    }
+    
+    return result;
+}
+
+function copyDiffResult() {
+    const summary = document.getElementById('diff-summary').textContent;
+    const stats = document.getElementById('diff-stats').textContent;
+    const json1 = document.getElementById('compare-input-1').value;
+    const json2 = document.getElementById('compare-input-2').value;
+    
+    const diffText = `JSON 比较结果\n${summary}\n${stats}\n\nJSON 1:\n${json1}\n\nJSON 2:\n${json2}`;
+    
+    navigator.clipboard.writeText(diffText).then(() => {
+        showToast('差异结果已复制到剪贴板');
+    }).catch(err => {
+        console.error('复制失败:', err);
+    });
+}
+

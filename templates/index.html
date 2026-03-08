@@ -112,6 +112,7 @@
                                 <button class="codegen-option" data-lang="go">Go</button>
                             </div>
                         </div>
+                        <button id="compare-mode-btn" class="view-btn">比较</button>
                     </div>
                     <button id="copy-btn" class="copy-btn" disabled>复制</button>
                 </div>
@@ -141,6 +142,26 @@
                 </div>
                 <div id="go-view" class="view-content" style="display: none;">
                     <pre id="go-output"></pre>
+                </div>
+                <div id="compare-view" class="view-content" style="display: none;">
+                    <div class="compare-container">
+                        <div class="compare-panel">
+                            <div class="compare-header">JSON 1</div>
+                            <textarea id="compare-input-1" class="compare-input" placeholder="粘贴第一个JSON..."></textarea>
+                            <div class="compare-output" id="compare-output-1"></div>
+                        </div>
+                        <div class="compare-panel">
+                            <div class="compare-header">JSON 2</div>
+                            <textarea id="compare-input-2" class="compare-input" placeholder="粘贴第二个JSON..."></textarea>
+                            <div class="compare-output" id="compare-output-2"></div>
+                        </div>
+                    </div>
+                    <div class="compare-summary">
+                        <h4>差异摘要</h4>
+                        <div id="diff-summary"></div>
+                        <div class="diff-stats" id="diff-stats"></div>
+                        <button id="copy-diff-btn" class="copy-btn" style="margin-top: 10px;">复制差异结果</button>
+                    </div>
                 </div>
                 <div id="copy-toast" class="copy-toast">已复制到剪贴板</div>
             </div>
