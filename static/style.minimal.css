@@ -456,6 +456,20 @@ body.dark-theme .json-null {
     color: #999;
 }
 
+/* 确保代码生成输出也有主题适配 */
+body.dark-theme pre#typescript-output,
+body.dark-theme pre#python-output,
+body.dark-theme pre#java-output,
+body.dark-theme pre#go-output,
+body.dark-theme pre#csv-output,
+body.dark-theme pre#yaml-output,
+body.dark-theme pre#tsv-output,
+body.dark-theme pre#xml-output {
+    background-color: #0a0a0a;
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #eee;
+}
+
 /* 14. 复制按钮极简化 */
 .copy-btn {
     padding: 6px 12px;
