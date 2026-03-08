@@ -117,6 +117,172 @@ function toggleTheme() {
     }
 }
 
+// History functionality
+document.getElementById('clear-history-btn').addEventListener('click', clearHistory);
+document.getElementById('settings-history-btn').addEventListener('click', toggleSettings);
+document.getElementById('save-settings-btn').addEventListener('click', saveHistorySettings);
+
+// Initialize history settings
+const defaultSettings = {
+    maxItems: 20,
+    autoSave: true
+};
+
+let historySettings = { ...defaultSettings };
+
+// Load history settings from localStorage
+const savedSettings = localStorage.getItem('json-formatter-history-settings');
+if (savedSettings) {
+    try {
+        historySettings = { ...defaultSettings, ...JSON.parse(savedSettings) };
+        document.getElementById('max-history-items').value = historySettings.maxItems;
+        document.getElementById('auto-save-toggle').checked = historySettings.autoSave;
+    } catch (e) {
+        console.error('Failed to load history settings:', e);
+    }
+}
+
+// Load and display history
+loadHistory();
+
+// Listen for format button to save history
+document.getElementById('format-btn').addEventListener('click', function() {
+    setTimeout(saveToHistory, 100); // Save after formatting
+});
+
+function saveToHistory() {
+    if (!historySettings.autoSave) return;
+    
+    const input = document.getElementById('json-input').value.trim();
+    if (!input) return;
+    
+    try {
+        // Validate JSON
+        JSON.parse(input);
+        
+        const historyItem = {
+            id: Date.now(),
+            timestamp: new Date().toLocaleTimeString('zh-CN'),
+            json: input,
+            preview: getPreview(input),
+            size: getSize(input)
+        };
+        
+        let history = getHistory();
+        
+        // Add new item to beginning
+        history.unshift(historyItem);
+        
+        // Limit items
+        if (history.length > historySettings.maxItems) {
+            history = history.slice(0, historySettings.maxItems);
+        }
+        
+        localStorage.setItem('json-formatter-history', JSON.stringify(history));
+        renderHistory();
+    } catch (e) {
+        // Invalid JSON, don't save to history
+    }
+}
+
+function getPreview(json) {
+    const preview = json.slice(0, 80);
+    return preview.length < json.length ? preview + '...' : preview;
+}
+
+function getSize(json) {
+    const bytes = new TextEncoder().encode(json).length;
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function getHistory() {
+    const historyStr = localStorage.getItem('json-formatter-history');
+    return historyStr ? JSON.parse(historyStr) : [];
+}
+
+function renderHistory() {
+    const history = getHistory();
+    const historyList = document.getElementById('history-list');
+    
+    if (history.length === 0) {
+        historyList.innerHTML = '<div class="history-empty">暂无历史记录</div>';
+        return;
+    }
+    
+    historyList.innerHTML = history.map(item => `
+        <div class="history-item" data-id="${item.id}">
+            <div class="history-time">${item.timestamp}</div>
+            <div class="history-preview" title="${escapeHtml(item.preview)}">${escapeHtml(item.preview)}</div>
+            <div class="history-size">${item.size}</div>
+        </div>
+    `).join('');
+    
+    // Add click listeners
+    document.querySelectorAll('.history-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const id = parseInt(this.getAttribute('data-id'));
+            loadFromHistory(id);
+            
+            // Remove active class from all items
+            document.querySelectorAll('.history-item').forEach(i => i.classList.remove('active'));
+            // Add active class to clicked item
+            this.classList.add('active');
+        });
+    });
+}
+
+function loadFromHistory(id) {
+    const history = getHistory();
+    const item = history.find(item => item.id === id);
+    if (item) {
+        document.getElementById('json-input').value = item.json;
+        formatJSON(); // Auto-format when loading from history
+    }
+}
+
+function loadHistory() {
+    renderHistory();
+}
+
+function clearHistory() {
+    if (confirm('确定要清空所有历史记录吗？')) {
+        localStorage.removeItem('json-formatter-history');
+        renderHistory();
+    }
+}
+
+function toggleSettings() {
+    const settingsEl = document.getElementById('history-settings');
+    const isVisible = settingsEl.style.display === 'block';
+    settingsEl.style.display = isVisible ? 'none' : 'block';
+}
+
+function saveHistorySettings() {
+    historySettings.maxItems = parseInt(document.getElementById('max-history-items').value) || 20;
+    historySettings.autoSave = document.getElementById('auto-save-toggle').checked;
+    
+    localStorage.setItem('json-formatter-history-settings', JSON.stringify(historySettings));
+    
+    // Truncate history if maxItems decreased
+    let history = getHistory();
+    if (history.length > historySettings.maxItems) {
+        history = history.slice(0, historySettings.maxItems);
+        localStorage.setItem('json-formatter-history', JSON.stringify(history));
+        renderHistory();
+    }
+    
+    document.getElementById('history-settings').style.display = 'none';
+    alert('设置已保存');
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // Schema functionality
 document.getElementById('generate-schema-btn').addEventListener('click', generateSchema);
 document.getElementById('validate-schema-btn').addEventListener('click', validateSchema);
