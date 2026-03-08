@@ -607,7 +607,7 @@ function provideFixSuggestion() {
     
     // 简单的修复尝试
     // 1. 缺少闭合引号
-    fixed = fixed.replace(/([{:,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*[:}])/g, '$1"$2"$3');
+    fixed = fixed.replace(/([{:,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*[:}])/g, '$1\"$2\"$3');
     
     // 2. 修复单引号（仅当双引号修复失败时）
     try {
