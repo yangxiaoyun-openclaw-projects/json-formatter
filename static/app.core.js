@@ -349,8 +349,21 @@ function renderMarkdown() {
         // 恢复代码块
         codeBlocks.forEach((block, index) => {
             const id = '```CODEBLOCK-' + index + '```';
-            const langClass = block.lang ? ` class="language-${block.lang}"` : '';
-            const codeHtml = `<pre><code${langClass}>${escapeHtml(block.code)}</code></pre>`;
+            const codeLines = block.code.split('\n');
+            const numberedCode = codeLines.map((line, i) => 
+                `<span class="code-line" data-line="${i+1}">${escapeHtml(line)}</span>`
+            ).join('\n');
+            
+            const langText = block.lang || 'code';
+            const codeHtml = `
+                <div class="code-block-container">
+                    <div class="code-block-header">
+                        <span class="code-lang">${escapeHtml(langText)}</span>
+                        <button class="code-copy-btn" onclick="copyCodeBlock(this)">复制</button>
+                    </div>
+                    <pre class="code-pre"><code class="language-${block.lang}">${numberedCode}</code></pre>
+                </div>
+            `;
             html = html.replace(id, codeHtml);
         });
         
@@ -360,6 +373,9 @@ function renderMarkdown() {
         
         output.innerHTML = html;
         document.getElementById('copy-btn').disabled = false;
+        
+        // 代码高亮
+        highlightCode();
         
         // 更新URL
         updateURLWithContent(input);
@@ -376,6 +392,68 @@ function getTableAlign(alignStr) {
     if (alignStr.endsWith(':')) return 'right';
     if (alignStr.startsWith(':')) return 'left';
     return '';
+}
+
+// 代码块复制功能
+function copyCodeBlock(btn) {
+    const container = btn.closest('.code-block-container');
+    const code = container.querySelector('code').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+        const originalText = btn.textContent;
+        btn.textContent = '已复制';
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.classList.remove('copied');
+        }, 2000);
+    }).catch(err => {
+        console.error('复制失败:', err);
+        btn.textContent = '复制失败';
+        setTimeout(() => {
+            btn.textContent = '复制';
+        }, 2000);
+    });
+}
+
+// 简单代码高亮实现
+function highlightCode() {
+    document.querySelectorAll('code[class*="language-"]').forEach(block => {
+        const code = block.textContent;
+        const lang = block.className.match(/language-(\w+)/)?.[1] || '';
+        
+        if (!lang) return;
+        
+        let highlighted = code;
+        
+        // 通用关键字高亮
+        const keywords = {
+            javascript: ['function', 'const', 'let', 'var', 'if', 'else', 'for', 'while', 'return', 'class', 'import', 'export', 'default', 'async', 'await', 'try', 'catch', 'new'],
+            python: ['def', 'class', 'import', 'from', 'if', 'elif', 'else', 'for', 'while', 'return', 'try', 'except', 'finally', 'with', 'as', 'lambda', 'async', 'await'],
+            java: ['public', 'private', 'protected', 'class', 'interface', 'static', 'final', 'void', 'int', 'String', 'boolean', 'if', 'else', 'for', 'while', 'return', 'try', 'catch', 'new'],
+            go: ['func', 'package', 'import', 'var', 'const', 'type', 'struct', 'interface', 'if', 'else', 'for', 'range', 'return', 'go', 'chan', 'map', 'slice']
+        };
+        
+        if (keywords[lang]) {
+            keywords[lang].forEach(keyword => {
+                const regex = new RegExp(`\\b${keyword}\\b`, 'g');
+                highlighted = highlighted.replace(regex, `<span class="code-keyword">${keyword}</span>`);
+            });
+        }
+        
+        // 字符串高亮
+        highlighted = highlighted.replace(/"([^"\\]*(\\.[^"\\]*)*)"/g, '<span class="code-string">"$1"</span>');
+        highlighted = highlighted.replace(/'([^'\\]*(\\.[^'\\]*)*)'/g, '<span class="code-string">\'$1\'</span>');
+        
+        // 注释高亮
+        highlighted = highlighted.replace(/\/\/.*$/gm, '<span class="code-comment">$&</span>');
+        highlighted = highlighted.replace(/\/\*[\s\S]*?\*\//g, '<span class="code-comment">$&</span>');
+        highlighted = highlighted.replace(/#.*$/gm, '<span class="code-comment">$&</span>');
+        
+        // 数字高亮
+        highlighted = highlighted.replace(/\b\d+(\.\d+)?\b/g, '<span class="code-number">$&</span>');
+        
+        block.innerHTML = highlighted;
+    });
 }
 
 // 更新URL内容
