@@ -227,9 +227,18 @@ function renderMarkdown() {
     }
     
     try {
-        // 简单的Markdown渲染实现
-        let html = input
-            // 标题
+        // 先处理代码块（避免代码块内的Markdown被解析）
+        let html = input;
+        const codeBlocks = [];
+        // 提取带语言标识的代码块
+        html = html.replace(/```(\w+)?\n([\s\S]*?)```/gim, function(match, lang, code) {
+            const id = '```CODEBLOCK-' + codeBlocks.length + '```';
+            codeBlocks.push({ lang: lang || '', code: code });
+            return id;
+        });
+        
+        // 处理标题
+        html = html
             .replace(/^###### (.*$)/gim, '<h6>$1</h6>')
             .replace(/^##### (.*$)/gim, '<h5>$1</h5>')
             .replace(/^#### (.*$)/gim, '<h4>$1</h4>')
@@ -238,43 +247,116 @@ function renderMarkdown() {
             .replace(/^# (.*$)/gim, '<h1>$1</h1>')
             // 粗体
             .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
+            .replace(/__(.*?)__/gim, '<strong>$1</strong>')
             // 斜体
             .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+            .replace(/_(.*?)_/gim, '<em>$1</em>')
             // 删除线
             .replace(/~~(.*?)~~/gim, '<del>$1</del>')
-            // 无序列表
-            .replace(/^- (.*$)/gim, '<li>$1</li>')
-            .replace(/^\* (.*$)/gim, '<li>$1</li>')
-            // 有序列表
-            .replace(/^(\d+)\. (.*$)/gim, '<li value="$1">$2</li>')
-            // 任务列表
-            .replace(/^- \[x\] (.*$)/gim, '<li class="task completed"><input type="checkbox" checked disabled> $1</li>')
-            .replace(/^- \[ \] (.*$)/gim, '<li class="task"><input type="checkbox" disabled> $1</li>')
-            // 引用块
-            .replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>')
-            // 代码块
-            .replace(/```([^`]+)```/gim, '<pre><code>$1</code></pre>')
+            // 引用块（支持多行）
+            .replace(/^> (.*(\n>.*)*)/gim, function(match, content) {
+                const lines = content.replace(/^> /gim, '');
+                return `<blockquote>${lines}</blockquote>`;
+            });
+        
+        // 处理表格
+        html = html.replace(/^\|.*\|\n\|[-:\s|]*\|\n((?:\|.*\|\n?)*)/gim, function(match, rows) {
+            const lines = match.trim().split('\n');
+            if (lines.length < 2) return match;
+            
+            // 表头
+            const headerCells = lines[0].split('|').map(cell => cell.trim()).filter(cell => cell);
+            // 分隔行（处理对齐）
+            const alignCells = lines[1].split('|').map(cell => cell.trim()).filter(cell => cell);
+            // 内容行
+            const rowLines = lines.slice(2);
+            
+            let tableHtml = '<table><thead><tr>';
+            // 生成表头
+            headerCells.forEach((cell, index) => {
+                const align = getTableAlign(alignCells[index]);
+                tableHtml += `<th${align ? ` align="${align}"` : ''}>${cell}</th>`;
+            });
+            tableHtml += '</tr></thead><tbody>';
+            
+            // 生成内容行
+            rowLines.forEach(line => {
+                if (!line.trim()) return;
+                const cells = line.split('|').map(cell => cell.trim()).filter(cell => cell);
+                tableHtml += '<tr>';
+                cells.forEach((cell, index) => {
+                    const align = getTableAlign(alignCells[index]);
+                    tableHtml += `<td${align ? ` align="${align}"` : ''}>${cell}</td>`;
+                });
+                tableHtml += '</tr>';
+            });
+            
+            tableHtml += '</tbody></table>';
+            return tableHtml;
+        });
+        
+        // 处理无序列表
+        html = html.replace(/^([-*+]) (.*(\n {2,}.*)*)/gim, function(match, marker, content) {
+            const items = content.split(/\n(?=[-*+] )/);
+            let ulHtml = '<ul>';
+            items.forEach(item => {
+                // 处理嵌套列表
+                const nested = item.replace(/\n {2,}/g, ' ');
+                // 检查任务列表
+                const taskMatch = nested.match(/^\[([ x])\] (.*)/);
+                if (taskMatch) {
+                    const checked = taskMatch[1] === 'x' ? 'checked disabled' : 'disabled';
+                    ulHtml += `<li class="task"><input type="checkbox" ${checked}> ${taskMatch[2]}</li>`;
+                } else {
+                    ulHtml += `<li>${nested}</li>`;
+                }
+            });
+            ulHtml += '</ul>';
+            return ulHtml;
+        });
+        
+        // 处理有序列表
+        html = html.replace(/^(\d+)\. (.*(\n {2,}.*)*)/gim, function(match, start, content) {
+            const items = content.split(/\n(?=\d+\. )/);
+            let olHtml = `<ol start="${start}">`;
+            items.forEach(item => {
+                // 处理嵌套列表
+                const nested = item.replace(/\n {2,}/g, ' ');
+                olHtml += `<li>${nested}</li>`;
+            });
+            olHtml += '</ol>';
+            return olHtml;
+        });
+        
+        // 行内元素
+        html = html
             // 行内代码
             .replace(/`([^`]+)`/gim, '<code>$1</code>')
             // 图片
             .replace(/!\[(.*?)\]\((.*?)\)/gim, '<img alt="$1" src="$2">')
             // 链接
             .replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2" target="_blank">$1</a>')
-            // 表格
-            .replace(/^\|(.*)\|$/gim, function(match, p1) {
-                return '<tr><td>' + p1.split('|').join('</td><td>') + '</td></tr>';
-            })
-            // 换行
+            // 换行（保留段落）
+            .replace(/\n\n/gim, '</p><p>')
             .replace(/\n/gim, '<br>');
         
-        // 包裹列表
-        html = html.replace(/(<li>.*?<\/li>)/gim, '<ul>$1</ul>');
-        // 合并相邻ul
-        html = html.replace(/<\/ul>\s*<ul>/gim, '');
-        // 包裹表格
-        html = html.replace(/(<tr>.*?<\/tr>)/gim, '<table>$1</table>');
-        // 合并相邻table
-        html = html.replace(/<\/table>\s*<table>/gim, '');
+        // 包裹段落
+        if (!html.startsWith('<')) {
+            html = '<p>' + html + '</p>';
+        }
+        html = html.replace(/<\/p><p>$/, '');
+        
+        // 恢复代码块
+        codeBlocks.forEach((block, index) => {
+            const id = '```CODEBLOCK-' + index + '```';
+            const langClass = block.lang ? ` class="language-${block.lang}"` : '';
+            const codeHtml = `<pre><code${langClass}>${escapeHtml(block.code)}</code></pre>`;
+            html = html.replace(id, codeHtml);
+        });
+        
+        // 清理多余的br
+        html = html.replace(/<br>\s*<\/(h[1-6]|ul|ol|li|blockquote|table|pre)>/gim, '</$1>');
+        html = html.replace(/<\/(h[1-6]|ul|ol|li|blockquote|table|pre)>\s*<br>/gim, '</$1>');
         
         output.innerHTML = html;
         document.getElementById('copy-btn').disabled = false;
@@ -285,6 +367,15 @@ function renderMarkdown() {
         output.innerHTML = `<span style="color: #d32f2f;">渲染错误: ${escapeHtml(e.message)}</span>`;
         document.getElementById('copy-btn').disabled = true;
     }
+}
+
+// 获取表格对齐方式
+function getTableAlign(alignStr) {
+    if (!alignStr) return '';
+    if (alignStr.startsWith(':') && alignStr.endsWith(':')) return 'center';
+    if (alignStr.endsWith(':')) return 'right';
+    if (alignStr.startsWith(':')) return 'left';
+    return '';
 }
 
 // 更新URL内容
