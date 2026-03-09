@@ -9,8 +9,12 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>JSON 格式化工具</h1>
+            <h1><span id="app-title">JSON 格式化工具</span></h1>
             <div class="header-buttons">
+                <div class="mode-switcher">
+                    <button id="json-mode-btn" class="mode-btn active" data-mode="json">JSON模式</button>
+                    <button id="markdown-mode-btn" class="mode-btn" data-mode="markdown">Markdown模式</button>
+                </div>
                 <button id="theme-toggle" class="theme-toggle" title="切换主题">🌙</button>
                 <a href="/api/docs" class="api-docs-btn" title="API文档">API</a>
             </div>
@@ -44,7 +48,7 @@
             </div>
             <div class="work-area">
             <div class="input-section">
-                <h2>输入 JSON</h2>
+                <h2 id="input-title">输入 JSON</h2>
                 <textarea id="json-input" placeholder="在此粘贴 JSON..."></textarea>
                 <div class="controls">
                     <div class="action-buttons">
@@ -95,7 +99,7 @@
             </div>
             <div class="output-section">
                 <div class="output-header">
-                    <div class="output-view-switcher">
+                    <div class="output-view-switcher" id="output-view-switcher">
                         <button id="json-view-btn" class="view-btn active">JSON</button>
                         <button id="xml-view-btn" class="view-btn">XML</button>
                         <div class="converter-dropdown">
@@ -118,10 +122,18 @@
                         <button id="compare-mode-btn" class="view-btn">比较</button>
                         <button id="batch-mode-btn" class="view-btn">批量</button>
                     </div>
+                    <!-- Markdown模式工具栏 -->
+                    <div class="markdown-toolbar" id="markdown-toolbar" style="display: none;">
+                        <button id="markdown-export-html-btn" class="view-btn">导出HTML</button>
+                        <button id="markdown-export-pdf-btn" class="view-btn">导出PDF</button>
+                    </div>
                     <button id="copy-btn" class="copy-btn" disabled>复制</button>
                 </div>
                 <div id="json-view" class="view-content">
                     <pre id="json-output"></pre>
+                </div>
+                <div id="markdown-view" class="view-content" style="display: none;">
+                    <div id="markdown-output" class="markdown-render"></div>
                 </div>
                 <div id="xml-view" class="view-content" style="display: none;">
                     <pre id="xml-output"></pre>
