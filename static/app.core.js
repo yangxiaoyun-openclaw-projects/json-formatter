@@ -25,6 +25,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // 模式切换
     document.getElementById('json-mode-btn').addEventListener('click', () => switchMode('json'));
     document.getElementById('markdown-mode-btn').addEventListener('click', () => switchMode('markdown'));
+    
+    // Markdown导出功能
+    document.getElementById('markdown-export-html-btn').addEventListener('click', exportMarkdownToHTML);
+    document.getElementById('markdown-export-pdf-btn').addEventListener('click', exportMarkdownToPDF);
 });
 
 // 模式切换功能
@@ -491,6 +495,257 @@ function renderMath() {
     } catch (e) {
         console.error('Math rendering error:', e);
     }
+}
+
+// 导出Markdown为HTML
+function exportMarkdownToHTML() {
+    const content = document.getElementById('markdown-output').innerHTML;
+    const title = 'Markdown Export';
+    
+    const htmlContent = `
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.8;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            color: #222;
+            background: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin: 24px 0 12px 0;
+            font-weight: 600;
+            line-height: 1.4;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 4px;
+        }
+        h1 { font-size: 2em; }
+        h2 { font-size: 1.5em; }
+        h3 { font-size: 1.25em; }
+        p { margin: 12px 0; }
+        strong { font-weight: 600; }
+        em { font-style: italic; }
+        del { color: #666; }
+        ul, ol { margin: 12px 0; padding-left: 24px; }
+        li { margin: 4px 0; }
+        blockquote {
+            margin: 12px 0;
+            padding: 8px 16px;
+            border-left: 4px solid #4a90e2;
+            background: #f5f8ff;
+            color: #666;
+        }
+        pre {
+            margin: 12px 0;
+            padding: 16px;
+            background: #f6f8fa;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: "SF Mono", Monaco, Menlo, monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        code {
+            padding: 2px 6px;
+            background: #f6f8fa;
+            border-radius: 4px;
+            font-family: "SF Mono", Monaco, Menlo, monospace;
+            font-size: 13px;
+        }
+        pre code {
+            padding: 0;
+            background: none;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            margin: 12px 0;
+        }
+        a {
+            color: #4a90e2;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            border: 1px solid #eee;
+        }
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid #eee;
+            text-align: left;
+        }
+        th {
+            background: #f6f8fa;
+            font-weight: 600;
+        }
+        .katex-display {
+            text-align: center;
+            margin: 12px 0;
+        }
+    </style>
+</head>
+<body>
+    ${content}
+</body>
+</html>
+    `;
+    
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'markdown-export.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showToast('HTML导出成功');
+}
+
+// 导出Markdown为PDF
+function exportMarkdownToPDF() {
+    const content = document.getElementById('markdown-output').innerHTML;
+    const title = 'Markdown Export';
+    
+    // 创建隐藏的iframe用于打印
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+    
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(`
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>${title}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.8;
+            color: #222;
+            background: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin: 24px 0 12px 0;
+            font-weight: 600;
+            line-height: 1.4;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 4px;
+            page-break-after: avoid;
+        }
+        h1 { font-size: 2em; }
+        h2 { font-size: 1.5em; }
+        h3 { font-size: 1.25em; }
+        p { margin: 12px 0; orphans: 3; widows: 3; }
+        strong { font-weight: 600; }
+        em { font-style: italic; }
+        del { color: #666; }
+        ul, ol { margin: 12px 0; padding-left: 24px; page-break-inside: avoid; }
+        li { margin: 4px 0; }
+        blockquote {
+            margin: 12px 0;
+            padding: 8px 16px;
+            border-left: 4px solid #4a90e2;
+            background: #f5f8ff;
+            color: #666;
+            page-break-inside: avoid;
+        }
+        pre {
+            margin: 12px 0;
+            padding: 16px;
+            background: #f6f8fa;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: "SF Mono", Monaco, Menlo, monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            page-break-inside: avoid;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        code {
+            padding: 2px 6px;
+            background: #f6f8fa;
+            border-radius: 4px;
+            font-family: "SF Mono", Monaco, Menlo, monospace;
+            font-size: 13px;
+        }
+        pre code {
+            padding: 0;
+            background: none;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            margin: 12px 0;
+            page-break-inside: avoid;
+        }
+        a {
+            color: #4a90e2;
+            text-decoration: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            border: 1px solid #eee;
+            page-break-inside: avoid;
+        }
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid #eee;
+            text-align: left;
+        }
+        th {
+            background: #f6f8fa;
+            font-weight: 600;
+        }
+        .katex-display {
+            text-align: center;
+            margin: 12px 0;
+            page-break-inside: avoid;
+        }
+    </style>
+</head>
+<body>
+    ${content}
+</body>
+</html>
+    `);
+    doc.close();
+    
+    // 等待内容加载完成后打印
+    iframe.contentWindow.onload = function() {
+        setTimeout(() => {
+            iframe.contentWindow.print();
+            document.body.removeChild(iframe);
+            showToast('PDF导出已启动，请在打印对话框中选择保存为PDF');
+        }, 1000);
+    };
 }
 
 // 更新URL内容
