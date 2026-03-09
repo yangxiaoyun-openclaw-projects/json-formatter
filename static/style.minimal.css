@@ -867,6 +867,50 @@ body.dark-theme .code-number {
     color: #f78c6c;
 }
 
+/* 数学公式样式适配 */
+.katex {
+    font-size: 1.1em;
+}
+
+/* 深色主题下公式颜色适配 */
+body.dark-theme .katex {
+    color: #eee;
+}
+
+body.dark-theme .katex .base {
+    color: #eee;
+}
+
+body.dark-theme .katex .mord {
+    color: #eee;
+}
+
+body.dark-theme .katex .symbol {
+    color: #eee;
+}
+
+body.dark-theme .katex .op-symbol {
+    color: #eee;
+}
+
+/* 公式错误样式 */
+.katex-error {
+    color: #d32f2f;
+    font-style: italic;
+}
+
+body.dark-theme .katex-error {
+    color: #ef5350;
+}
+
+/* 块级公式居中显示 */
+.katex-display {
+    text-align: center;
+    margin: 12px 0;
+    overflow-x: auto;
+    padding: 8px 0;
+}
+
 .markdown-render img {
     max-width: 100%;
     height: auto;

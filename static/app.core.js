@@ -377,6 +377,9 @@ function renderMarkdown() {
         // 代码高亮
         highlightCode();
         
+        // 数学公式渲染
+        renderMath();
+        
         // 更新URL
         updateURLWithContent(input);
     } catch (e) {
@@ -454,6 +457,40 @@ function highlightCode() {
         
         block.innerHTML = highlighted;
     });
+}
+
+// 数学公式渲染
+function renderMath() {
+    if (typeof renderMathInElement === 'undefined') {
+        console.warn('KaTeX not loaded, skipping math rendering');
+        return;
+    }
+    
+    const output = document.getElementById('markdown-output');
+    
+    try {
+        renderMathInElement(output, {
+            delimiters: [
+                {left: "$$", right: "$$", display: true},
+                {left: "$", right: "$", display: false},
+                {left: "\\(", right: "\\)", display: false},
+                {left: "\\[", right: "\\]", display: true}
+            ],
+            throwOnError: false,
+            errorColor: '#d32f2f',
+            strict: 'ignore',
+            trust: true,
+            macros: {
+                "\\R": "\\mathbb{R}",
+                "\\Z": "\\mathbb{Z}",
+                "\\N": "\\mathbb{N}",
+                "\\Q": "\\mathbb{Q}",
+                "\\C": "\\mathbb{C}"
+            }
+        });
+    } catch (e) {
+        console.error('Math rendering error:', e);
+    }
 }
 
 // 更新URL内容
