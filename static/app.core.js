@@ -29,6 +29,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Markdown导出功能
     document.getElementById('markdown-export-html-btn').addEventListener('click', exportMarkdownToHTML);
     document.getElementById('markdown-export-pdf-btn').addEventListener('click', exportMarkdownToPDF);
+    
+    // 分屏布局功能初始化
+    initSplitLayout();
 });
 
 // 模式切换功能
@@ -799,3 +802,171 @@ window.addEventListener('load', function() {
         }
     }
 });
+
+// 分屏布局功能
+function initSplitLayout() {
+    const layoutToggleBtn = document.getElementById('layout-toggle-btn');
+    const workArea = document.querySelector('.work-area');
+    const splitLayout = document.getElementById('split-layout');
+    const splitDivider = document.getElementById('split-divider');
+    const inputPanel = document.getElementById('input-panel');
+    const outputPanel = document.getElementById('output-panel');
+    
+    if (!layoutToggleBtn || !splitDivider) {
+        console.log('分屏布局元素未找到，跳过初始化');
+        return;
+    }
+    
+    // 从localStorage加载布局偏好
+    const savedLayout = localStorage.getItem('json-formatter-layout');
+    const savedSplitRatio = localStorage.getItem('json-formatter-split-ratio');
+    
+    // 默认比例
+    let splitRatio = savedSplitRatio ? parseFloat(savedSplitRatio) : 0.5;
+    
+    // 初始化布局
+    if (savedLayout === 'split') {
+        workArea.classList.add('split-mode');
+        layoutToggleBtn.textContent = '⬍ 上下布局';
+        updateSplitPanels(splitRatio);
+    } else {
+        workArea.classList.remove('split-mode');
+        layoutToggleBtn.textContent = '⬌ 左右分屏';
+        localStorage.setItem('json-formatter-layout', 'vertical');
+    }
+    
+    // 布局切换按钮事件
+    layoutToggleBtn.addEventListener('click', function() {
+        if (workArea.classList.contains('split-mode')) {
+            // 切换到上下布局
+            workArea.classList.remove('split-mode');
+            this.textContent = '⬌ 左右分屏';
+            localStorage.setItem('json-formatter-layout', 'vertical');
+        } else {
+            // 切换到左右分屏
+            workArea.classList.add('split-mode');
+            this.textContent = '⬍ 上下布局';
+            localStorage.setItem('json-formatter-layout', 'split');
+            
+            // 保存当前比例
+            const rect = splitLayout.getBoundingClientRect();
+            const currentRatio = inputPanel.offsetWidth / rect.width;
+            localStorage.setItem('json-formatter-split-ratio', currentRatio);
+        }
+    });
+    
+    // 分屏拖拽功能
+    let isDragging = false;
+    let startX = 0;
+    let startWidth = 0;
+    let totalWidth = 0;
+    
+    splitDivider.addEventListener('mousedown', function(e) {
+        if (!workArea.classList.contains('split-mode')) return;
+        
+        isDragging = true;
+        startX = e.clientX;
+        startWidth = inputPanel.offsetWidth;
+        totalWidth = splitLayout.offsetWidth - splitDivider.offsetWidth;
+        
+        splitDivider.classList.add('dragging');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+        
+        e.preventDefault();
+    });
+    
+    document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        
+        const dx = e.clientX - startX;
+        const newInputWidth = Math.max(150, Math.min(totalWidth - 150, startWidth + dx));
+        const newRatio = newInputWidth / totalWidth;
+        
+        updateSplitPanels(newRatio);
+    });
+    
+    document.addEventListener('mouseup', function() {
+        if (!isDragging) return;
+        
+        isDragging = false;
+        splitDivider.classList.remove('dragging');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        
+        // 保存比例
+        const rect = splitLayout.getBoundingClientRect();
+        const totalWidth = rect.width - splitDivider.offsetWidth;
+        const currentRatio = inputPanel.offsetWidth / totalWidth;
+        localStorage.setItem('json-formatter-split-ratio', currentRatio);
+    });
+    
+    // 触摸屏支持
+    splitDivider.addEventListener('touchstart', function(e) {
+        if (!workArea.classList.contains('split-mode')) return;
+        
+        isDragging = true;
+        startX = e.touches[0].clientX;
+        startWidth = inputPanel.offsetWidth;
+        totalWidth = splitLayout.offsetWidth - splitDivider.offsetWidth;
+        
+        splitDivider.classList.add('dragging');
+        document.body.style.userSelect = 'none';
+        
+        e.preventDefault();
+    });
+    
+    document.addEventListener('touchmove', function(e) {
+        if (!isDragging || !e.touches.length) return;
+        
+        const dx = e.touches[0].clientX - startX;
+        const newInputWidth = Math.max(150, Math.min(totalWidth - 150, startWidth + dx));
+        const newRatio = newInputWidth / totalWidth;
+        
+        updateSplitPanels(newRatio);
+        e.preventDefault();
+    });
+    
+    document.addEventListener('touchend', function() {
+        if (!isDragging) return;
+        
+        isDragging = false;
+        splitDivider.classList.remove('dragging');
+        document.body.style.userSelect = '';
+        
+        // 保存比例
+        const rect = splitLayout.getBoundingClientRect();
+        const totalWidth = rect.width - splitDivider.offsetWidth;
+        const currentRatio = inputPanel.offsetWidth / totalWidth;
+        localStorage.setItem('json-formatter-split-ratio', currentRatio);
+    });
+    
+    // 更新分屏面板比例
+    function updateSplitPanels(ratio) {
+        if (!workArea.classList.contains('split-mode')) return;
+        
+        const rect = splitLayout.getBoundingClientRect();
+        const totalWidth = rect.width - splitDivider.offsetWidth;
+        const inputWidth = Math.max(150, Math.min(totalWidth - 150, totalWidth * ratio));
+        const outputWidth = totalWidth - inputWidth;
+        
+        inputPanel.style.flex = `0 0 ${inputWidth}px`;
+        outputPanel.style.flex = `0 0 ${outputWidth}px`;
+        
+        // 更新比例指示器
+        const inputPercent = Math.round((inputWidth / totalWidth) * 100);
+        const outputPercent = Math.round((outputWidth / totalWidth) * 100);
+        
+        inputPanel.setAttribute('data-percent', inputPercent);
+        outputPanel.setAttribute('data-percent', outputPercent);
+    }
+    
+    // 窗口大小变化时调整
+    window.addEventListener('resize', function() {
+        if (workArea.classList.contains('split-mode')) {
+            const savedRatio = localStorage.getItem('json-formatter-split-ratio');
+            const ratio = savedRatio ? parseFloat(savedRatio) : 0.5;
+            updateSplitPanels(ratio);
+        }
+    });
+}

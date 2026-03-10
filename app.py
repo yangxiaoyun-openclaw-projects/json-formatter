@@ -12,6 +12,11 @@ CORS(app)  # Enable CORS for API endpoints
 def index():
     return render_template('index.html')
 
+@app.route('/split')
+def split_layout():
+    """第七期任务496：左右分屏布局"""
+    return render_template('split_layout.html')
+
 @app.route('/api/docs')
 def api_docs():
     return render_template('api_docs.html')

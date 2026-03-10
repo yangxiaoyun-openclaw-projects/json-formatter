@@ -997,3 +997,202 @@ body.dark-theme .markdown-render th {
         justify-content: center;
     }
 }
+
+/* 18. 分屏布局样式 (任务496) */
+.layout-switcher {
+    position: absolute;
+    top: 100px;
+    right: 30px;
+    z-index: 100;
+}
+
+.layout-toggle-btn {
+    padding: 6px 12px;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    color: #666;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.layout-toggle-btn:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+body.dark-theme .layout-toggle-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #aaa;
+}
+
+body.dark-theme .layout-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* 默认布局：上下布局 */
+.work-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    position: relative;
+    height: calc(100vh - 180px);
+}
+
+/* 分屏布局 */
+.work-area.split-mode {
+    flex-direction: row;
+    gap: 0;
+}
+
+.split-layout {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.split-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    transition: flex 0.2s ease;
+}
+
+.input-section, .output-section {
+    flex: 1;
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+body.dark-theme .input-section,
+body.dark-theme .output-section {
+    background: #1a1a1a;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 分屏分隔条 */
+.split-divider {
+    width: 12px;
+    background: rgba(0, 0, 0, 0.05);
+    cursor: col-resize;
+    position: relative;
+    z-index: 10;
+    transition: background 0.2s;
+}
+
+.split-divider:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.split-divider:active {
+    background: rgba(74, 144, 226, 0.2);
+}
+
+.split-divider::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 4px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+}
+
+body.dark-theme .split-divider {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-theme .split-divider:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .split-divider:active {
+    background: rgba(130, 170, 255, 0.2);
+}
+
+body.dark-theme .split-divider::before {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* 分屏比例指示器 */
+.split-panel::after {
+    content: "";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 11px;
+    color: rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.8);
+    padding: 2px 6px;
+    border-radius: 3px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.split-mode .split-panel::after {
+    opacity: 1;
+}
+
+#input-panel::after {
+    content: attr(data-percent) "%";
+}
+
+#output-panel::after {
+    content: attr(data-percent) "%";
+}
+
+body.dark-theme .split-panel::after {
+    color: rgba(255, 255, 255, 0.5);
+    background: rgba(0, 0, 0, 0.6);
+}
+
+/* 拖拽时的视觉反馈 */
+.split-divider.dragging {
+    background: rgba(74, 144, 226, 0.3);
+}
+
+body.dark-theme .split-divider.dragging {
+    background: rgba(130, 170, 255, 0.3);
+}
+
+/* 响应式调整 */
+@media (max-width: 1200px) {
+    .work-area {
+        height: auto;
+    }
+    
+    .work-area.split-mode {
+        flex-direction: column;
+        gap: 24px;
+    }
+    
+    .split-divider {
+        width: 100%;
+        height: 12px;
+        cursor: row-resize;
+    }
+    
+    .split-divider::before {
+        width: 40px;
+        height: 4px;
+    }
+    
+    .split-panel::after {
+        content: none;
+    }
+}

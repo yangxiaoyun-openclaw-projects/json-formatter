@@ -1,0 +1,63 @@
+<svg width="800" height="500" xmlns="http://www.w3.org/2000/svg">
+  <!-- 区域大小优化原型 -->
+  <rect x="0" y="0" width="800" height="500" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+  
+  <!-- 优化前（对比） -->
+  <text x="400" y="30" font-family="Arial" font-size="14" fill="#495057" text-anchor="middle" font-weight="bold">优化前后对比</text>
+  
+  <!-- 优化前 -->
+  <rect x="50" y="50" width="300" height="200" fill="#ffffff" stroke="#868e96" stroke-width="1" rx="5"/>
+  <text x="200" y="75" font-family="Arial" font-size="14" fill="#495057" text-anchor="middle">优化前</text>
+  
+  <!-- 小的输入区 -->
+  <rect x="70" y="90" width="260" height="60" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1" rx="3"/>
+  <text x="80" y="115" font-family="Arial" font-size="10" fill="#868e96">仅显示5行</text>
+  
+  <!-- 小的输出区 -->
+  <rect x="70" y="160" width="260" height="60" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1" rx="3"/>
+  <text x="80" y="185" font-family="Arial" font-size="10" fill="#868e96">内容被截断</text>
+  
+  <!-- 滚动条 -->
+  <rect x="320" y="90" width="5" height="60" fill="#adb5bd" rx="2"/>
+  <rect x="320" y="160" width="5" height="60" fill="#adb5bd" rx="2"/>
+  
+  <text x="200" y="260" font-family="Arial" font-size="10" fill="#868e96" text-anchor="middle">需要频繁滚动</text>
+  
+  <!-- 优化后 -->
+  <rect x="450" y="50" width="300" height="200" fill="#ffffff" stroke="#40c057" stroke-width="2" rx="5"/>
+  <text x="600" y="75" font-family="Arial" font-size="14" fill="#495057" text-anchor="middle">优化后</text>
+  
+  <!-- 大的输入区 -->
+  <rect x="470" y="90" width="260" height="80" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1" rx="3"/>
+  <text x="480" y="115" font-family="Arial" font-size="10" fill="#868e96">显示15-20行</text>
+  <text x="480" y="135" font-family="Arial" font-size="10" fill="#868e96">减少滚动需求</text>
+  
+  <!-- 自适应的输出区 -->
+  <rect x="470" y="180" width="260" height="50" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1" rx="3"/>
+  <text x="480" y="205" font-family="Arial" font-size="10" fill="#868e96">自动调整高度</text>
+  
+  <!-- 无滚动条 -->
+  <text x="600" y="260" font-family="Arial" font-size="10" fill="#2b8a3e" text-anchor="middle">充分利用空间</text>
+  
+  <!-- 移动端适配 -->
+  <rect x="100" y="300" width="600" height="180" fill="#ffffff" stroke="#4dabf7" stroke-width="2" rx="5"/>
+  <text x="400" y="325" font-family="Arial" font-size="14" fill="#495057" text-anchor="middle">移动端自适应布局</text>
+  
+  <!-- 窄屏幕布局 -->
+  <rect x="150" y="350" width="500" height="30" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1" rx="3"/>
+  <text x="160" y="370" font-family="Arial" font-size="10" fill="#868e96">输入区（窄屏幕模式）</text>
+  
+  <rect x="150" y="390" width="500" height="30" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1" rx="3"/>
+  <text x="160" y="410" font-family="Arial" font-size="10" fill="#868e96">输出区（窄屏幕模式）</text>
+  
+  <rect x="150" y="430" width="500" height="30" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1" rx="3"/>
+  <text x="160" y="450" font-family="Arial" font-size="10" fill="#868e96">操作按钮区</text>
+  
+  <!-- 响应式指示 -->
+  <rect x="400" y="480" width="400" height="15" fill="#e7f5ff" stroke="#4dabf7" stroke-width="1" rx="2"/>
+  <text x="410" y="492" font-family="Arial" font-size="10" fill="#1864ab">检测到窄屏幕，自动切换布局</text>
+  
+  <!-- 高度限制 -->
+  <rect x="0" y="480" width="400" height="15" fill="#fff3bf" stroke="#f08c00" stroke-width="1" rx="2"/>
+  <text x="10" y="492" font-family="Arial" font-size="10" fill="#e67700">区域最小/最大高度限制</text>
+</svg>

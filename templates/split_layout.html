@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON格式化工具 - 第七期：左右分屏布局</title>
+    <link rel="stylesheet" href="/static/style.split.css">
+    <style>
+        /* 内联样式确保原型一致性 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        /* 原型中的精确颜色 */
+        .prototype-blue { color: #4dabf7; }
+        .prototype-green { color: #40c057; }
+        .prototype-gray-light { color: #adb5bd; }
+        .prototype-gray-medium { color: #868e96; }
+        .prototype-gray-dark { color: #495057; }
+        .prototype-blue-dark { color: #1864ab; }
+        .prototype-green-dark { color: #2b8a3e; }
+        
+        .prototype-bg-light { background-color: #f8f9fa; }
+        .prototype-bg-white { background-color: #ffffff; }
+        .prototype-bg-blue-light { background-color: #e7f5ff; }
+    </style>
+</head>
+<body>
+    <div class="split-container" id="splitContainer">
+        <!-- 头部区域 -->
+        <header class="split-header">
+            <h1 class="header-title">JSON格式化工具 - 左右分屏模式</h1>
+        </header>
+
+        <!-- 主内容区域 -->
+        <main class="split-main">
+            <!-- 标签说明 -->
+            <div class="label-container">
+                <div class="left-label">可拖动调整宽度</div>
+                <div class="right-label">实时同步预览</div>
+            </div>
+            
+            <!-- 箭头指示 -->
+            <div class="arrow-container">
+                <svg width="20" height="10">
+                    <line x1="10" y1="0" x2="10" y2="10" stroke="#495057" stroke-width="1" class="arrow-line"/>
+                    <line x1="5" y1="5" x2="10" y2="10" stroke="#495057" stroke-width="1" class="arrow-line"/>
+                    <line x1="15" y1="5" x2="10" y2="10" stroke="#495057" stroke-width="1" class="arrow-line"/>
+                </svg>
+            </div>
+
+            <!-- 左侧输入区 -->
+            <section class="input-panel" id="inputPanel">
+                <div class="input-panel-header">
+                    <h2 class="input-panel-title prototype-blue-dark">输入区</h2>
+                </div>
+                <div class="input-area" id="inputArea">
+                    <p class="input-placeholder">JSON输入区域（显示15-20行，减少滚动需求）</p>
+                    <textarea id="jsonInput" class="json-input" placeholder='在此输入JSON数据，例如：
+{
+  "name": "示例数据",
+  "version": "1.0",
+  "data": {
+    "items": ["项目1", "项目2", "项目3"],
+    "count": 3,
+    "active": true
+  }
+}' style="width: 100%; height: 400px; border: none; background: transparent; font-family: monospace; font-size: 12px; resize: none; outline: none; line-height: 1.5;"></textarea>
+                    <div class="input-info" style="font-size: 10px; color: #868e96; margin-top: 5px; display: flex; justify-content: space-between;">
+                        <span>显示15-20行</span>
+                        <span>区域最小高度: 300px / 最大高度: 600px</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 分屏线 -->
+            <div class="splitter" id="splitter">
+                <div class="splitter-handle"></div>
+                
+                <!-- 比例指示器 -->
+                <div class="ratio-indicator">
+                    <div class="ratio-circle" data-ratio="0.5" title="50/50 比例">
+                        <span class="ratio-text">50/50</span>
+                    </div>
+                    <div class="ratio-circle" data-ratio="0.6" title="60/40 比例">
+                        <span class="ratio-text">60/40</span>
+                    </div>
+                    <div class="ratio-circle" data-ratio="0.7" title="70/30 比例">
+                        <span class="ratio-text">70/30</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧输出区 -->
+            <section class="output-panel" id="outputPanel">
+                <div class="output-panel-header">
+                    <h2 class="output-panel-title prototype-green-dark">输出区</h2>
+                </div>
+                <div class="output-area" id="outputArea">
+                    <p class="output-placeholder">格式化结果区域（自动调整高度）</p>
+                    <pre id="jsonOutput" class="json-output" style="font-family: monospace; font-size: 12px; margin: 0; white-space: pre-wrap; word-break: break-word; line-height: 1.5;">{
+  "message": "等待输入JSON数据",
+  "status": "准备就绪"
+}</pre>
+                    <div class="output-info" style="font-size: 10px; color: #868e96; margin-top: 5px; display: flex; justify-content: space-between;">
+                        <span>自动调整高度</span>
+                        <span>区域最小高度: 200px / 最大高度: 600px</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 布局切换按钮 -->
+            <button class="layout-toggle-btn" id="layoutToggleBtn">
+                <span>⬌</span>
+                <span class="layout-toggle-text">切换布局</span>
+            </button>
+
+            <!-- 存储状态指示器 -->
+            <div class="storage-status" id="storageStatus">
+                <p class="storage-status-text">布局偏好已保存到localStorage</p>
+            </div>
+            
+            <!-- 响应式指示器（移动端适配） -->
+            <div class="responsive-indicator" id="responsiveIndicator" style="display: none; position: absolute; top: 10px; right: 10px; z-index: 100; padding: 5px 10px; background-color: #e7f5ff; border: 1px solid #4dabf7; border-radius: 3px;">
+                <p class="responsive-indicator-text" style="font-size: 10px; color: #1864ab; margin: 0;">检测到窄屏幕，自动切换布局</p>
+            </div>
+            
+            <!-- 高度限制指示器 -->
+            <div class="height-limit-indicator" id="heightLimitIndicator" style="position: absolute; bottom: 0; left: 0; right: 0; z-index: 90; padding: 3px 10px; background-color: #fff3bf; border-top: 1px solid #f08c00;">
+                <p class="height-limit-indicator-text" style="font-size: 10px; color: #e67700; margin: 0;">区域最小/最大高度限制</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- 功能按钮区域 -->
+    <div style="position: fixed; bottom: 60px; left: 20px; z-index: 100; display: flex; gap: 10px;">
+        <button id="formatBtn" style="padding: 8px 16px; background-color: #4dabf7; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 12px;">
+            格式化
+        </button>
+        <button id="compressBtn" style="padding: 8px 16px; background-color: #868e96; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 12px;">
+            压缩
+        </button>
+        <button id="clearBtn" style="padding: 8px 16px; background-color: #adb5bd; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 12px;">
+            清空
+        </button>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="/static/split_layout.js"></script>
+</body>
+</html>

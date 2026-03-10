@@ -47,7 +47,12 @@
                 </div>
             </div>
             <div class="work-area">
-            <div class="input-section">
+                <div class="layout-switcher">
+                    <button id="layout-toggle-btn" class="layout-toggle-btn" title="切换布局">⬌ 布局</button>
+                </div>
+                <div class="split-layout" id="split-layout">
+                    <div class="split-panel" id="input-panel">
+                        <div class="input-section">
                 <h2 id="input-title">输入 JSON</h2>
                 <textarea id="json-input" placeholder="在此粘贴 JSON..."></textarea>
                 <div class="controls">
@@ -96,8 +101,10 @@
 }</div>
                     <div id="schema-result" class="schema-result"></div>
                 </div>
-            </div>
-            <div class="output-section">
+                    </div>
+                    <div class="split-divider" id="split-divider"></div>
+                    <div class="split-panel" id="output-panel">
+                        <div class="output-section">
                 <div class="output-header">
                     <div class="output-view-switcher" id="output-view-switcher">
                         <button id="json-view-btn" class="view-btn active">JSON</button>
@@ -222,8 +229,11 @@
                 </div>
                 <div id="copy-toast" class="copy-toast">已复制到剪贴板</div>
             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
     </div>
     <!-- KaTeX CSS for math rendering -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" integrity="sha384-GvrOXuhMATgEsSwCs4smul74iXGOixntILdUW9XmUC6+HX0sLNAK3q71HotJqlAn" crossorigin="anonymous">

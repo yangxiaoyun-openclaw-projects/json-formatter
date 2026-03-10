@@ -1,0 +1,47 @@
+<svg width="800" height="500" xmlns="http://www.w3.org/2000/svg">
+  <!-- 左右分屏布局原型 -->
+  <rect x="0" y="0" width="800" height="500" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+  
+  <!-- 左侧输入区 -->
+  <rect x="10" y="70" width="380" height="420" fill="#ffffff" stroke="#4dabf7" stroke-width="2" rx="5"/>
+  <text x="20" y="95" font-family="Arial" font-size="16" fill="#1864ab">输入区</text>
+  <rect x="20" y="110" width="360" height="300" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1" rx="3"/>
+  <text x="35" y="135" font-family="Arial" font-size="12" fill="#868e96">JSON输入区域...</text>
+  
+  <!-- 右侧输出区 -->
+  <rect x="410" y="70" width="380" height="420" fill="#ffffff" stroke="#40c057" stroke-width="2" rx="5"/>
+  <text x="420" y="95" font-family="Arial" font-size="16" fill="#2b8a3e">输出区</text>
+  <rect x="420" y="110" width="360" height="300" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1" rx="3"/>
+  <text x="435" y="135" font-family="Arial" font-size="12" fill="#868e96">格式化结果区域...</text>
+  
+  <!-- 分屏拖动条 -->
+  <rect x="395" y="70" width="10" height="420" fill="#f8f9fa" stroke="#868e96" stroke-width="1"/>
+  <rect x="398" y="240" width="4" height="80" fill="#868e96" rx="2"/>
+  
+  <!-- 比例指示器 -->
+  <circle cx="400" cy="100" r="15" fill="#f8f9fa" stroke="#868e96" stroke-width="1"/>
+  <text x="400" y="105" font-family="Arial" font-size="10" fill="#495057" text-anchor="middle">50/50</text>
+  
+  <circle cx="400" cy="200" r="15" fill="#f8f9fa" stroke="#868e96" stroke-width="1"/>
+  <text x="400" y="205" font-family="Arial" font-size="10" fill="#495057" text-anchor="middle">60/40</text>
+  
+  <circle cx="400" cy="300" r="15" fill="#f8f9fa" stroke="#868e96" stroke-width="1"/>
+  <text x="400" y="305" font-family="Arial" font-size="10" fill="#495057" text-anchor="middle">70/30</text>
+  
+  <!-- 布局切换按钮 -->
+  <rect x="350" y="400" width="100" height="35" fill="#f8f9fa" stroke="#495057" stroke-width="1" rx="5"/>
+  <text x="400" y="422" font-family="Arial" font-size="12" fill="#495057" text-anchor="middle">⬌ 切换布局</text>
+  
+  <!-- 标签说明 -->
+  <text x="200" y="50" font-family="Arial" font-size="14" fill="#495057" text-anchor="middle">可拖动调整宽度</text>
+  <text x="600" y="50" font-family="Arial" font-size="14" fill="#495057" text-anchor="middle">实时同步预览</text>
+  
+  <!-- 箭头指示 -->
+  <line x1="200" y1="75" x2="200" y2="85" stroke="#495057" stroke-width="1"/>
+  <line x1="190" y1="80" x2="200" y2="85" stroke="#495057" stroke-width="1"/>
+  <line x1="210" y1="80" x2="200" y2="85" stroke="#495057" stroke-width="1"/>
+  
+  <!-- 存储状态 -->
+  <rect x="10" y="450" width="780" height="40" fill="#e7f5ff" stroke="#4dabf7" stroke-width="1" rx="3"/>
+  <text x="20" y="475" font-family="Arial" font-size="12" fill="#1864ab">布局偏好已保存到localStorage</text>
+</svg>
