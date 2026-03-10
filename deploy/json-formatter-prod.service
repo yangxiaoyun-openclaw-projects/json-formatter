@@ -1,0 +1,13 @@
+[Unit]
+Description=JSON Formatter Web Service
+After=network.target
+
+[Service]
+User=yangxiaoyun
+WorkingDirectory=/home/yangxiaoyun/workspace/online/json_formatter
+ExecStart=/home/yangxiaoyun/workspace/online/json_formatter/venv/bin/gunicorn --workers 4 --bind 0.0.0.0:8000 app:app
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
